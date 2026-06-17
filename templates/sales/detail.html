@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Venta #{{ sale.id }}{% endblock %}
+{% block page_title %}Detalle de Venta{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">🧾 Venta #{{ sale.id }}</h2>
+    <p class="page-sub">{{ sale.created_at.strftime('%d de %B de %Y a las %H:%M') }} · Atendió: {{ sale.user.full_name }}</p>
+  </div>
+  <a href="{{ url_for('sales.index') }}" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="card" style="max-width:600px">
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        {% for item in sale.items %}
+        <tr>
+          <td><strong>{{ item.product.name }}</strong><br>
+              <small class="text-muted">{{ item.product.category }}</small></td>
+          <td>{{ item.quantity }}</td>
+          <td>${{ "{:,.0f}".format(item.unit_price) }}</td>
+          <td><strong>${{ "{:,.0f}".format(item.subtotal) }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="total-row-table">
+          <td colspan="3"><strong>TOTAL</strong></td>
+          <td><strong>${{ "{:,.0f}".format(sale.total) }}</strong></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="text-muted">Costo total</td>
+          <td class="text-muted">${{ "{:,.0f}".format(sale.total_cost) }}</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="text-success"><strong>Ganancia</strong></td>
+          <td class="text-success"><strong>+${{ "{:,.0f}".format(sale.profit) }}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  {% if sale.notes %}
+  <p class="notes-field"><strong>Notas:</strong> {{ sale.notes }}</p>
+  {% endif %}
+</div>
+{% endblock %}

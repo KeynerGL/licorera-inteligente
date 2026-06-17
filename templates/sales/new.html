@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% block title %}Nueva Venta — Licorera Inteligente{% endblock %}
+{% block page_title %}Nueva Venta{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">💰 Registrar Venta</h2>
+    <p class="page-sub">Busca productos y arma el carrito.</p>
+  </div>
+  <a href="{{ url_for('sales.index') }}" class="btn btn-outline">Ver Historial</a>
+</div>
+
+<div class="pos-layout">
+  <!-- ===== Panel de Productos ===== -->
+  <div class="pos-products">
+    <div class="card">
+      <div class="pos-search-bar">
+        <input type="text" id="product-search" class="form-input"
+               placeholder="🔍 Buscar producto..." oninput="filterProducts()"/>
+        <select id="category-filter" class="form-input" onchange="filterProducts()">
+          <option value="">Todas las categorías</option>
+        </select>
+      </div>
+      <div class="product-grid" id="product-grid">
+        <div class="loading-products">Cargando productos...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Panel del Carrito ===== -->
+  <div class="pos-cart">
+    <div class="card cart-card">
+      <h3 class="card-title">🛒 Carrito de Venta</h3>
+
+      <div class="cart-items" id="cart-items">
+        <p class="cart-empty">Agrega productos al carrito.</p>
+      </div>
+
+      <div class="cart-totals">
+        <div class="total-row"><span>Subtotal:</span><span id="cart-subtotal">$0</span></div>
+        <div class="total-row total-main"><span>TOTAL:</span><span id="cart-total">$0</span></div>
+        <div class="total-row text-success"><span>Ganancia estimada:</span><span id="cart-profit">$0</span></div>
+      </div>
+
+      <div class="form-group" style="margin-top:1rem">
+        <label class="form-label">Notas (opcional)</label>
+        <input class="form-input" type="text" id="sale-notes" placeholder="Ej: Cliente de la 15..."/>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" id="confirm-sale-btn"
+              onclick="confirmSale()" disabled>
+        ✅ Confirmar Venta
+      </button>
+      <button class="btn btn-outline btn-block" onclick="clearCart()">🗑 Limpiar Carrito</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de éxito -->
+<div class="modal-overlay" id="success-modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-icon">✅</div>
+    <h3>¡Venta registrada!</h3>
+    <p id="modal-detail"></p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="newSale()">Nueva Venta</button>
+      <a href="{{ url_for('sales.index') }}" class="btn btn-outline">Ver Historial</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ===== Estado del carrito =====
+let cart     = [];   // [{product, quantity}]
+let products = [];   // Todos los productos cargados
+
+// ===== Cargar productos desde API =====
+async function loadProducts() {
+  const res  = await fetch('/inventory/api/products');
+  products   = await res.json();
+
+  // Poblar filtro de categorías
+  const cats = [...new Set(products.map(p => p.category))];
+  const sel  = document.getElementById('category-filter');
+  cats.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
+
+  renderProducts(products);
+}
+
+function filterProducts() {
+  const q   = document.getElementById('product-search').value.toLowerCase();
+  const cat = document.getElementById('category-filter').value;
+  const filtered = products.filter(p =>
+    (p.name.toLowerCase().includes(q)) &&
+    (!cat || p.category === cat)
+  );
+  renderProducts(filtered);
+}
+
+function renderProducts(list) {
+  const grid = document.getElementById('product-grid');
+  if (!list.length) {
+    grid.innerHTML = '<p class="empty-state">No se encontraron productos con stock.</p>';
+    return;
+  }
+  grid.innerHTML = list.map(p => `
+    <div class="product-card ${p.quantity <= 3 ? 'low-stock' : ''}" onclick="addToCart(${p.id})">
+      <div class="product-category">${p.category}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="product-price">$${p.sale_price.toLocaleString()}</div>
+      <div class="product-stock ${p.quantity === 0 ? 'out' : p.quantity <= 3 ? 'low' : ''}">
+        Stock: ${p.quantity}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== Gestión del carrito =====
+function addToCart(productId) {
+  const p = products.find(p => p.id === productId);
+  if (!p || p.quantity === 0) return;
+
+  const existing = cart.find(i => i.product.id === productId);
+  if (existing) {
+    if (existing.quantity < p.quantity) {
+      existing.quantity++;
+    } else {
+      alert(`Solo hay ${p.quantity} unidades disponibles.`);
+      return;
+    }
+  } else {
+    cart.push({ product: p, quantity: 1 });
+  }
+  renderCart();
+}
+
+function removeFromCart(productId) {
+  cart = cart.filter(i => i.product.id !== productId);
+  renderCart();
+}
+
+function changeQty(productId, delta) {
+  const item = cart.find(i => i.product.id === productId);
+  if (!item) return;
+  item.quantity += delta;
+  if (item.quantity <= 0) {
+    removeFromCart(productId);
+  } else if (item.quantity > item.product.quantity) {
+    item.quantity = item.product.quantity;
+    alert(`Máximo disponible: ${item.product.quantity}`);
+    renderCart();
+  } else {
+    renderCart();
+  }
+}
+
+function renderCart() {
+  const container = document.getElementById('cart-items');
+  const btn       = document.getElementById('confirm-sale-btn');
+
+  if (!cart.length) {
+    container.innerHTML = '<p class="cart-empty">Agrega productos al carrito.</p>';
+    btn.disabled = true;
+    updateTotals(0, 0);
+    return;
+  }
+
+  container.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.product.name}</div>
+        <div class="cart-item-price">$${item.product.sale_price.toLocaleString()} c/u</div>
+      </div>
+      <div class="cart-item-controls">
+        <button onclick="changeQty(${item.product.id}, -1)" class="qty-btn">−</button>
+        <span class="qty-num">${item.quantity}</span>
+        <button onclick="changeQty(${item.product.id}, +1)" class="qty-btn">+</button>
+        <button onclick="removeFromCart(${item.product.id})" class="remove-btn">✕</button>
+      </div>
+      <div class="cart-item-subtotal">$${(item.product.sale_price * item.quantity).toLocaleString()}</div>
+    </div>
+  `).join('');
+
+  const total  = cart.reduce((s, i) => s + i.product.sale_price * i.quantity, 0);
+  const profit = cart.reduce((s, i) => s + (i.product.sale_price - (i.product.sale_price * 0.65)) * i.quantity, 0);
+  updateTotals(total, profit);
+  btn.disabled = false;
+}
+
+function updateTotals(total, profit) {
+  document.getElementById('cart-subtotal').textContent = '$' + total.toLocaleString();
+  document.getElementById('cart-total').textContent    = '$' + total.toLocaleString();
+  document.getElementById('cart-profit').textContent   = '$' + Math.round(profit).toLocaleString();
+}
+
+function clearCart() {
+  cart = [];
+  renderCart();
+}
+
+// ===== Confirmar venta =====
+async function confirmSale() {
+  if (!cart.length) return;
+
+  const btn = document.getElementById('confirm-sale-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Procesando...';
+
+  const payload = {
+    items: cart.map(i => ({ product_id: i.product.id, quantity: i.quantity })),
+    notes: document.getElementById('sale-notes').value
+  };
+
+  try {
+    const res  = await fetch('/sales/new', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('modal-detail').textContent =
+        `Total: $${data.total.toLocaleString()} · Ganancia: $${data.profit.toLocaleString()} · Venta #${data.sale_id}`;
+      document.getElementById('success-modal').style.display = 'flex';
+      clearCart();
+      loadProducts(); // Refrescar stocks
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (e) {
+    alert('Error de conexión. Intenta de nuevo.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✅ Confirmar Venta';
+  }
+}
+
+function newSale() {
+  document.getElementById('success-modal').style.display = 'none';
+  document.getElementById('sale-notes').value = '';
+}
+
+// Inicializar
+loadProducts();
+</script>
+{% endblock %}

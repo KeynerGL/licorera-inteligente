@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Historial de Ventas{% endblock %}
+{% block page_title %}Historial de Ventas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">🧾 Historial de Ventas</h2>
+    <p class="page-sub">{{ sales|length }} venta(s) — Total: ${{ "{:,.0f}".format(total_ventas) }}</p>
+  </div>
+  <a href="{{ url_for('sales.new') }}" class="btn btn-primary">+ Nueva Venta</a>
+</div>
+
+<!-- Filtro de fechas -->
+<div class="card filters-card">
+  <form method="GET" class="filters-form">
+    <div class="form-group" style="margin:0">
+      <label class="form-label">Desde</label>
+      <input class="form-input" type="date" name="date_from" value="{{ date_from }}"/>
+    </div>
+    <div class="form-group" style="margin:0">
+      <label class="form-label">Hasta</label>
+      <input class="form-input" type="date" name="date_to" value="{{ date_to }}"/>
+    </div>
+    <button class="btn btn-outline" type="submit">Filtrar</button>
+    <a href="{{ url_for('sales.index') }}" class="btn btn-ghost">Hoy</a>
+  </form>
+</div>
+
+<!-- Resumen del período -->
+<div class="kpi-grid kpi-mini">
+  <div class="kpi-card kpi-green">
+    <div class="kpi-icon">💵</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Total Ventas</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(total_ventas) }}</div>
+    </div>
+  </div>
+  <div class="kpi-card kpi-blue">
+    <div class="kpi-icon">📈</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Ganancia Neta</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(total_ganacia) }}</div>
+    </div>
+  </div>
+  <div class="kpi-card kpi-purple">
+    <div class="kpi-icon">🧾</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Transacciones</div>
+      <div class="kpi-value">{{ sales|length }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabla de ventas -->
+<div class="card">
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Fecha</th><th>Productos</th><th>Total</th>
+          <th>Ganancia</th><th>Atendió</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sale in sales %}
+        <tr>
+          <td><strong>#{{ sale.id }}</strong></td>
+          <td>{{ sale.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ sale.items|length }} ítem(s)</td>
+          <td><strong>${{ "{:,.0f}".format(sale.total) }}</strong></td>
+          <td class="text-success">+${{ "{:,.0f}".format(sale.profit) }}</td>
+          <td>{{ sale.user.full_name }}</td>
+          <td>
+            <div class="action-btns">
+              <a href="{{ url_for('sales.detail', sale_id=sale.id) }}" class="btn btn-sm btn-outline">Ver</a>
+              {% if current_user.is_admin() %}
+              <form method="POST" action="{{ url_for('sales.delete', sale_id=sale.id) }}"
+                    onsubmit="return confirm('¿Anular venta #{{ sale.id }}? Se restaurará el inventario.')">
+                <button class="btn btn-sm btn-danger">Anular</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="empty-state">No hay ventas en este período.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios — Licorera Inteligente{% endblock %}
+{% block page_title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">👥 Usuarios del Sistema</h2>
+    <p class="page-sub">Administra los accesos a la plataforma.</p>
+  </div>
+  <a href="{{ url_for('auth.add_user') }}" class="btn btn-primary">+ Nuevo Usuario</a>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Estado</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>
+            <div class="user-cell">
+              <div class="mini-avatar">{{ u.full_name[0] }}</div>
+              {{ u.full_name }}
+            </div>
+          </td>
+          <td><code>{{ u.username }}</code></td>
+          <td>
+            <span class="badge {% if u.role == 'admin' %}badge-purple{% else %}badge-blue{% endif %}">
+              {{ u.role|capitalize }}
+            </span>
+          </td>
+          <td>
+            <span class="badge {% if u.is_active %}badge-green{% else %}badge-red{% endif %}">
+              {{ 'Activo' if u.is_active else 'Inactivo' }}
+            </span>
+          </td>
+          <td>
+            {% if u.id != current_user.id %}
+            <form method="POST" action="{{ url_for('auth.toggle_user', user_id=u.id) }}" style="display:inline">
+              <button class="btn btn-sm {% if u.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                {{ 'Desactivar' if u.is_active else 'Activar' }}
+              </button>
+            </form>
+            {% else %}
+              <span class="text-muted">(eres tú)</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
