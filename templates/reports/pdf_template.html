@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #1e293b; margin: 20px; }
+  h1   { color: #4f46e5; border-bottom: 2px solid #4f46e5; padding-bottom:6px; }
+  h2   { color: #374151; margin-top:20px; font-size:14px; }
+  .kpi-row { display:flex; gap:20px; margin:16px 0; }
+  .kpi     { background:#f1f5f9; padding:12px; border-radius:6px; flex:1; text-align:center; }
+  .kpi-val { font-size:18px; font-weight:bold; color:#4f46e5; }
+  .kpi-lbl { font-size:10px; color:#64748b; }
+  table    { width:100%; border-collapse:collapse; margin-top:10px; }
+  th       { background:#4f46e5; color:white; padding:7px 10px; text-align:left; font-size:11px; }
+  td       { padding:6px 10px; border-bottom:1px solid #e2e8f0; }
+  tr:nth-child(even) { background:#f8fafc; }
+  .footer  { margin-top:30px; font-size:10px; color:#94a3b8; text-align:center; }
+  .green   { color: #16a34a; }
+</style>
+</head>
+<body>
+<h1>🍾 Licorera Inteligente — Reporte {{ report_type }}</h1>
+<p>Período: <strong>{{ period }}</strong> · Generado: {{ date_from.strftime('%d/%m/%Y') if date_from else '' }}</p>
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-val">${{ "{:,.0f}".format(total_sales) }}</div>
+    <div class="kpi-lbl">Total Ventas</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val">${{ "{:,.0f}".format(total_cost) }}</div>
+    <div class="kpi-lbl">Costo Total</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val green">${{ "{:,.0f}".format(total_profit) }}</div>
+    <div class="kpi-lbl">Ganancia Neta</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val">{{ num_sales }}</div>
+    <div class="kpi-lbl">Transacciones</div>
+  </div>
+</div>
+
+<h2>Ventas por Día</h2>
+<table>
+  <thead><tr><th>Fecha</th><th>Transacciones</th><th>Total</th><th>Ganancia</th></tr></thead>
+  <tbody>
+    {% for d in daily %}
+    <tr>
+      <td>{{ d.day }}</td>
+      <td>{{ d.count }}</td>
+      <td>${{ "{:,.0f}".format(d.total or 0) }}</td>
+      <td class="green">+${{ "{:,.0f}".format(d.profit or 0) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Productos Más Vendidos</h2>
+<table>
+  <thead><tr><th>Producto</th><th>Categoría</th><th>Unidades</th><th>Ingresos</th></tr></thead>
+  <tbody>
+    {% for p in top_products %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td>{{ p.category }}</td>
+      <td>{{ p.qty }}</td>
+      <td>${{ "{:,.0f}".format(p.revenue) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="footer">
+  Reporte generado por Licorera Inteligente · Sistema de Gestión para Licoreras de Barrio
+</div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar' if delivery else 'Nuevo' }} Domicilio{% endblock %}
+{% block page_title %}{{ 'Editar' if delivery else 'Nuevo' }} Domicilio{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">{{ '✏️ Editar Domicilio' if delivery else '🛵 Nuevo Domicilio' }}</h2>
+  </div>
+  <a href="{{ url_for('deliveries.index') }}" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="card" style="max-width:520px">
+  <form method="POST">
+    <div class="form-group">
+      <label class="form-label">Nombre del Cliente *</label>
+      <input class="form-input" type="text" name="customer_name" required
+             value="{{ delivery.customer_name if delivery else '' }}"
+             placeholder="Ej: María González"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Dirección *</label>
+      <input class="form-input" type="text" name="address" required
+             value="{{ delivery.address if delivery else '' }}"
+             placeholder="Ej: Calle 45 #23-10, Barrio La Paz"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Teléfono *</label>
+        <input class="form-input" type="tel" name="phone" required
+               value="{{ delivery.phone if delivery else '' }}"
+               placeholder="Ej: 3001234567"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total del Pedido (COP)</label>
+        <input class="form-input" type="number" name="total" min="0"
+               value="{{ delivery.total|int if delivery else 0 }}"/>
+      </div>
+    </div>
+    {% if delivery %}
+    <div class="form-group">
+      <label class="form-label">Estado</label>
+      <select class="form-input" name="status">
+        {% for s in statuses %}
+        <option value="{{ s }}" {{ 'selected' if delivery.status == s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="form-group">
+      <label class="form-label">Notas del Pedido</label>
+      <textarea class="form-input" name="notes" rows="3"
+                placeholder="Ej: Sin hielo, 6 Águilas frías, 1 Nectar...">{{ delivery.notes if delivery else '' }}</textarea>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">
+      {{ '💾 Guardar' if delivery else '🛵 Registrar Domicilio' }}
+    </button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Inventario — Licorera Inteligente{% endblock %}
+{% block page_title %}Inventario{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">📦 Inventario</h2>
+    <p class="page-sub">
+      {{ products|length }} producto(s) encontrado(s)
+      {% if low_count %} · <span class="text-danger">⚠️ {{ low_count }} con stock bajo</span>{% endif %}
+    </p>
+  </div>
+  {% if current_user.is_admin() %}
+  <a href="{{ url_for('inventory.add') }}" class="btn btn-primary">+ Agregar Producto</a>
+  {% endif %}
+</div>
+
+<!-- Filtros -->
+<div class="card filters-card">
+  <form method="GET" class="filters-form">
+    <input class="form-input" type="text" name="search" placeholder="🔍 Buscar producto..." value="{{ search }}"/>
+    <select class="form-input" name="category" onchange="this.form.submit()">
+      <option value="">Todas las categorías</option>
+      {% for cat in categories %}
+      <option value="{{ cat }}" {% if cat == current_category %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+    <label class="checkbox-label">
+      <input type="checkbox" name="low_stock" value="1" {% if low_stock %}checked{% endif %} onchange="this.form.submit()"/>
+      Solo stock bajo
+    </label>
+    <button class="btn btn-outline" type="submit">Filtrar</button>
+    <a href="{{ url_for('inventory.index') }}" class="btn btn-ghost">Limpiar</a>
+  </form>
+</div>
+
+<!-- Tabla de productos -->
+<div class="card">
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Stock</th>
+          <th>P. Compra</th>
+          <th>P. Venta</th>
+          <th>Margen</th>
+          <th>Estado</th>
+          {% if current_user.is_admin() %}<th>Acciones</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr class="{% if p.is_low_stock %}row-warning{% endif %}">
+          <td><strong>{{ p.name }}</strong></td>
+          <td><span class="category-badge cat-{{ p.category|lower|replace(' ','') }}">{{ p.category }}</span></td>
+          <td>
+            <div class="stock-cell">
+              <span class="stock-num {% if p.quantity == 0 %}text-danger{% elif p.is_low_stock %}text-warning{% else %}text-success{% endif %}">
+                {{ p.quantity }}
+              </span>
+              {% if p.is_low_stock %}
+                <span class="stock-alert" title="Stock mínimo: {{ p.min_stock }}">⚠️</span>
+              {% endif %}
+            </div>
+          </td>
+          <td>${{ "{:,.0f}".format(p.purchase_price) }}</td>
+          <td>${{ "{:,.0f}".format(p.sale_price) }}</td>
+          <td>
+            <span class="margin-badge">{{ p.profit_percent }}%</span>
+          </td>
+          <td>
+            {% if p.quantity == 0 %}
+              <span class="badge badge-red">Agotado</span>
+            {% elif p.is_low_stock %}
+              <span class="badge badge-yellow">Stock Bajo</span>
+            {% else %}
+              <span class="badge badge-green">Disponible</span>
+            {% endif %}
+          </td>
+          {% if current_user.is_admin() %}
+          <td>
+            <div class="action-btns">
+              <a href="{{ url_for('inventory.edit', product_id=p.id) }}" class="btn btn-sm btn-outline">Editar</a>
+              <form method="POST" action="{{ url_for('inventory.delete', product_id=p.id) }}"
+                    onsubmit="return confirm('¿Eliminar « {{ p.name }} »?')">
+                <button class="btn btn-sm btn-danger" type="submit">Eliminar</button>
+              </form>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="empty-state">No se encontraron productos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

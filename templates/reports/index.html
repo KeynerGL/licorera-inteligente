@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Reportes{% endblock %}
+{% block page_title %}Reportes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2 class="page-title">📈 Reportes</h2>
+</div>
+
+<div class="reports-grid">
+  <!-- Reporte Diario -->
+  <div class="report-card">
+    <div class="report-icon">📅</div>
+    <h3>Reporte Diario</h3>
+    <p>Ventas y ganancias del día actual.</p>
+    <div class="report-actions">
+      <a href="{{ url_for('reports.daily') }}" class="btn btn-primary">Ver Reporte</a>
+      <a href="{{ url_for('reports.export_pdf', report_type='daily') }}" class="btn btn-outline">⬇ PDF</a>
+    </div>
+  </div>
+
+  <!-- Reporte Semanal -->
+  <div class="report-card">
+    <div class="report-icon">🗓</div>
+    <h3>Reporte Semanal</h3>
+    <p>Resumen de la semana actual (lunes a hoy).</p>
+    <div class="report-actions">
+      <a href="{{ url_for('reports.weekly') }}" class="btn btn-primary">Ver Reporte</a>
+      <a href="{{ url_for('reports.export_pdf', report_type='weekly') }}" class="btn btn-outline">⬇ PDF</a>
+    </div>
+  </div>
+
+  <!-- Reporte Mensual -->
+  <div class="report-card">
+    <div class="report-icon">📊</div>
+    <h3>Reporte Mensual</h3>
+    <p>Datos consolidados del mes en curso.</p>
+    <div class="report-actions">
+      <a href="{{ url_for('reports.monthly') }}" class="btn btn-primary">Ver Reporte</a>
+      <a href="{{ url_for('reports.export_pdf', report_type='monthly') }}" class="btn btn-outline">⬇ PDF</a>
+    </div>
+  </div>
+
+  <!-- Reporte Personalizado -->
+  <div class="report-card">
+    <div class="report-icon">🎯</div>
+    <h3>Rango Personalizado</h3>
+    <p>Selecciona cualquier período de fechas.</p>
+    <form method="POST" action="{{ url_for('reports.custom') }}">
+      <div class="form-row" style="margin-bottom:1rem">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Desde</label>
+          <input class="form-input" type="date" name="date_from" value="{{ today }}"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Hasta</label>
+          <input class="form-input" type="date" name="date_to" value="{{ today }}"/>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit">Generar Reporte</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

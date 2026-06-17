@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar' if product else 'Agregar' }} Producto{% endblock %}
+{% block page_title %}{{ 'Editar' if product else 'Agregar' }} Producto{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">{{ '✏️ Editar Producto' if product else '➕ Nuevo Producto' }}</h2>
+    <p class="page-sub">{{ product.name if product else 'Completa los datos del producto.' }}</p>
+  </div>
+  <a href="{{ url_for('inventory.index') }}" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="card" style="max-width:560px">
+  <form method="POST" id="product-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nombre del Producto *</label>
+        <input class="form-input" type="text" name="name" required
+               value="{{ product.name if product else '' }}"
+               placeholder="Ej: Águila 330ml"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoría *</label>
+        <select class="form-input" name="category" required>
+          {% for cat in categories %}
+          <option value="{{ cat }}" {{ 'selected' if product and product.category == cat }}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Cantidad en Stock *</label>
+        <input class="form-input" type="number" name="quantity" min="0" required
+               value="{{ product.quantity if product else 0 }}"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stock Mínimo (alerta)</label>
+        <input class="form-input" type="number" name="min_stock" min="0"
+               value="{{ product.min_stock if product else 5 }}"/>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Precio de Compra (COP) *</label>
+        <input class="form-input" type="number" name="purchase_price" min="0" step="50" required
+               value="{{ product.purchase_price|int if product else '' }}"
+               oninput="calcMargin()" id="purchase_price"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Precio de Venta (COP) *</label>
+        <input class="form-input" type="number" name="sale_price" min="0" step="50" required
+               value="{{ product.sale_price|int if product else '' }}"
+               oninput="calcMargin()" id="sale_price"/>
+      </div>
+    </div>
+
+    <!-- Vista previa del margen -->
+    <div class="margin-preview" id="margin-preview" style="display:none">
+      Margen de ganancia: <strong id="margin-amount">$0</strong>
+      (<strong id="margin-pct">0%</strong>)
+    </div>
+
+    <button class="btn btn-primary btn-block" type="submit">
+      {{ '💾 Guardar Cambios' if product else '➕ Agregar Producto' }}
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function calcMargin() {
+  const buy  = parseFloat(document.getElementById('purchase_price').value) || 0;
+  const sell = parseFloat(document.getElementById('sale_price').value) || 0;
+  const diff = sell - buy;
+  const pct  = buy > 0 ? ((diff / buy) * 100).toFixed(1) : 0;
+
+  if (buy > 0 && sell > 0) {
+    document.getElementById('margin-amount').textContent = '$' + diff.toLocaleString();
+    document.getElementById('margin-pct').textContent = pct + '%';
+    document.getElementById('margin-preview').style.display = 'block';
+    document.getElementById('margin-preview').className =
+      'margin-preview ' + (diff >= 0 ? 'margin-ok' : 'margin-bad');
+  }
+}
+calcMargin();
+</script>
+{% endblock %}

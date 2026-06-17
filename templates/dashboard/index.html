@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Licorera Inteligente{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <h2 class="page-title">📊 Panel Principal</h2>
+    <p class="page-sub">Resumen en tiempo real de tu negocio.</p>
+  </div>
+</div>
+
+<!-- ===== TARJETAS KPI ===== -->
+<div class="kpi-grid">
+  <div class="kpi-card kpi-green">
+    <div class="kpi-icon">💵</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Ventas de Hoy</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(today_stats.total) }}</div>
+      <div class="kpi-sub">{{ today_stats.count }} transacciones</div>
+    </div>
+  </div>
+  <div class="kpi-card kpi-blue">
+    <div class="kpi-icon">📈</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Ganancia del Día</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(today_stats.profit) }}</div>
+      <div class="kpi-sub">Utilidad neta</div>
+    </div>
+  </div>
+  <div class="kpi-card kpi-purple">
+    <div class="kpi-icon">🗓</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Ventas del Mes</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(month_stats.total) }}</div>
+      <div class="kpi-sub">{{ month_stats.count }} transacciones</div>
+    </div>
+  </div>
+  <div class="kpi-card kpi-orange">
+    <div class="kpi-icon">🛵</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Domicilios</div>
+      <div class="kpi-value">{{ pending_deliveries }}</div>
+      <div class="kpi-sub">{{ en_camino_deliveries }} en camino</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RECOMENDACIONES IA ===== -->
+{% if recommendations %}
+<div class="recommendations-section">
+  <h3 class="section-title">🤖 Inteligencia de Negocio</h3>
+  <div class="recommendations-grid">
+    {% for rec in recommendations %}
+    <div class="rec-card rec-{{ rec.type }}">
+      <span class="rec-icon">{{ rec.icon }}</span>
+      <span class="rec-msg">{{ rec.msg }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ===== GRÁFICAS ===== -->
+<div class="charts-grid">
+  <div class="card chart-card">
+    <h3 class="card-title">Ventas últimos 7 días</h3>
+    <canvas id="salesChart" height="200"></canvas>
+  </div>
+  <div class="card chart-card">
+    <h3 class="card-title">Ventas por día de la semana</h3>
+    <canvas id="dowChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- ===== TABLAS ===== -->
+<div class="tables-grid">
+  <!-- Top productos -->
+  <div class="card">
+    <h3 class="card-title">🏆 Productos Más Vendidos</h3>
+    {% if top_products %}
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>Producto</th><th>Categoría</th><th>Unidades</th><th>Ingresos</th></tr></thead>
+        <tbody>
+          {% for p in top_products %}
+          <tr>
+            <td>{{ p.name }}</td>
+            <td><span class="category-badge">{{ p.category }}</span></td>
+            <td><strong>{{ p.qty }}</strong></td>
+            <td>${{ "{:,.0f}".format(p.revenue) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty-state">Aún no hay ventas registradas.</p>
+    {% endif %}
+  </div>
+
+  <!-- Stock bajo -->
+  <div class="card">
+    <h3 class="card-title">⚠️ Productos con Stock Bajo</h3>
+    {% if low_stock %}
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>Producto</th><th>Stock</th><th>Mínimo</th><th>Estado</th></tr></thead>
+        <tbody>
+          {% for p in low_stock %}
+          <tr>
+            <td>{{ p.name }}</td>
+            <td><strong class="text-danger">{{ p.quantity }}</strong></td>
+            <td>{{ p.min_stock }}</td>
+            <td>
+              {% if p.quantity == 0 %}
+                <span class="badge badge-red">Agotado</span>
+              {% else %}
+                <span class="badge badge-yellow">Bajo</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty-state">✅ Todo el inventario está bien.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Datos desde el backend (inyectados seguros con tojson)
+const last7 = {{ last_7_days | tojson }};
+const dow   = {{ day_of_week | tojson }};
+
+// Gráfica de barras: últimos 7 días
+new Chart(document.getElementById('salesChart'), {
+  type: 'bar',
+  data: {
+    labels: last7.map(d => d.date),
+    datasets: [{
+      label: 'Ventas ($)',
+      data: last7.map(d => d.total),
+      backgroundColor: 'rgba(99,102,241,0.8)',
+      borderRadius: 8,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' },
+           ticks: { color: '#94a3b8', callback: v => '$' + v.toLocaleString() } },
+      x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+    }
+  }
+});
+
+// Gráfica de línea: ventas por día de semana
+const dowOrder = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+new Chart(document.getElementById('dowChart'), {
+  type: 'line',
+  data: {
+    labels: dowOrder,
+    datasets: [{
+      label: 'Ventas ($)',
+      data: dowOrder.map(d => dow[d] || 0),
+      borderColor: '#10b981',
+      backgroundColor: 'rgba(16,185,129,0.1)',
+      tension: 0.4,
+      fill: true,
+      pointBackgroundColor: '#10b981',
+      pointRadius: 5
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' },
+           ticks: { color: '#94a3b8', callback: v => '$' + v.toLocaleString() } },
+      x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+    }
+  }
+});
+</script>
+{% endblock %}

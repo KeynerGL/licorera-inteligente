@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Reporte {{ report_type }}{% endblock %}
+{% block page_title %}Reporte {{ report_type }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">📈 Reporte {{ report_type }}</h2>
+    <p class="page-sub">Período: {{ period }}</p>
+  </div>
+  <div class="action-btns">
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline">← Volver</a>
+    <button onclick="window.print()" class="btn btn-primary">🖨 Imprimir</button>
+  </div>
+</div>
+
+<!-- KPIs del reporte -->
+<div class="kpi-grid">
+  <div class="kpi-card kpi-green">
+    <div class="kpi-icon">💵</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Total Ventas</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(total_sales) }}</div>
+      <div class="kpi-sub">{{ num_sales }} transacciones</div>
+    </div>
+  </div>
+  <div class="kpi-card kpi-orange">
+    <div class="kpi-icon">🏭</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Costo Total</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(total_cost) }}</div>
+    </div>
+  </div>
+  <div class="kpi-card kpi-blue">
+    <div class="kpi-icon">📈</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Ganancia Neta</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(total_profit) }}</div>
+      <div class="kpi-sub">
+        {% if total_sales > 0 %}
+          Margen: {{ "%.1f"|format((total_profit / total_sales) * 100) }}%
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tables-grid">
+  <!-- Ventas por día -->
+  <div class="card">
+    <h3 class="card-title">📅 Ventas por Día</h3>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>Fecha</th><th>Transacciones</th><th>Total</th><th>Ganancia</th></tr></thead>
+        <tbody>
+          {% for d in daily %}
+          <tr>
+            <td>{{ d.day }}</td>
+            <td>{{ d.count }}</td>
+            <td>${{ "{:,.0f}".format(d.total or 0) }}</td>
+            <td class="text-success">+${{ "{:,.0f}".format(d.profit or 0) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="empty-state">Sin datos en este período.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Top productos -->
+  <div class="card">
+    <h3 class="card-title">🏆 Productos Más Vendidos</h3>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>Producto</th><th>Categoría</th><th>Unidades</th><th>Ingresos</th></tr></thead>
+        <tbody>
+          {% for p in top_products %}
+          <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.category }}</td>
+            <td><strong>{{ p.qty }}</strong></td>
+            <td>${{ "{:,.0f}".format(p.revenue) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="empty-state">Sin datos.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Detalle de ventas -->
+{% if sales %}
+<div class="card">
+  <h3 class="card-title">🧾 Detalle de Transacciones ({{ sales|length }})</h3>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Fecha/Hora</th><th>Ítems</th><th>Total</th><th>Ganancia</th><th>Usuario</th></tr></thead>
+      <tbody>
+        {% for s in sales %}
+        <tr>
+          <td>#{{ s.id }}</td>
+          <td>{{ s.created_at.strftime('%d/%m %H:%M') }}</td>
+          <td>{{ s.items|length }}</td>
+          <td>${{ "{:,.0f}".format(s.total) }}</td>
+          <td class="text-success">+${{ "{:,.0f}".format(s.profit) }}</td>
+          <td>{{ s.user.full_name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

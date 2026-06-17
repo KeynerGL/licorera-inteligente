@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Domicilios{% endblock %}
+{% block page_title %}Domicilios{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">🛵 Domicilios</h2>
+    <p class="page-sub">
+      <span class="text-warning">{{ pending }} pendiente(s)</span> ·
+      <span class="text-info">{{ en_camino }} en camino</span>
+    </p>
+  </div>
+  <a href="{{ url_for('deliveries.add') }}" class="btn btn-primary">+ Nuevo Domicilio</a>
+</div>
+
+<!-- Filtros -->
+<div class="card filters-card">
+  <form method="GET" class="filters-form">
+    <input class="form-input" type="date" name="date" value="{{ date_filter }}"/>
+    <select class="form-input" name="status" onchange="this.form.submit()">
+      <option value="">Todos los estados</option>
+      {% for s in statuses %}
+      <option value="{{ s }}" {{ 'selected' if s == status_filter }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-outline" type="submit">Filtrar</button>
+    <a href="{{ url_for('deliveries.index') }}" class="btn btn-ghost">Hoy</a>
+  </form>
+</div>
+
+<!-- Tarjetas de domicilios -->
+<div class="deliveries-grid">
+  {% for d in deliveries %}
+  <div class="delivery-card delivery-{{ d.status_color }}">
+    <div class="delivery-header">
+      <div>
+        <div class="delivery-name">{{ d.customer_name }}</div>
+        <div class="delivery-time">{{ d.created_at.strftime('%H:%M') }}</div>
+      </div>
+      <span class="badge badge-{{ d.status_color }}">{{ d.status }}</span>
+    </div>
+
+    <div class="delivery-info">
+      <div>📍 {{ d.address }}</div>
+      <div>📞 <a href="tel:{{ d.phone }}">{{ d.phone }}</a></div>
+      {% if d.total %}<div>💵 ${{ "{:,.0f}".format(d.total) }}</div>{% endif %}
+      {% if d.notes %}<div class="delivery-notes">📝 {{ d.notes }}</div>{% endif %}
+    </div>
+
+    <div class="delivery-actions">
+      <!-- Cambiar estado rápido -->
+      {% if d.status == 'Pendiente' %}
+      <button class="btn btn-sm btn-info" onclick="updateStatus({{ d.id }}, 'En camino')">🛵 Despachar</button>
+      {% elif d.status == 'En camino' %}
+      <button class="btn btn-sm btn-success" onclick="updateStatus({{ d.id }}, 'Entregado')">✅ Entregado</button>
+      {% endif %}
+      <a href="{{ url_for('deliveries.edit', delivery_id=d.id) }}" class="btn btn-sm btn-outline">Editar</a>
+      <form method="POST" action="{{ url_for('deliveries.delete', delivery_id=d.id) }}"
+            onsubmit="return confirm('¿Eliminar este domicilio?')" style="display:inline">
+        <button class="btn btn-sm btn-danger">Eliminar</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state" style="grid-column:1/-1">No hay domicilios para esta fecha.</div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function updateStatus(deliveryId, newStatus) {
+  const formData = new FormData();
+  formData.append('status', newStatus);
+
+  const res = await fetch(`/deliveries/status/${deliveryId}`, {
+    method: 'POST', body: formData
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    location.reload();
+  } else {
+    alert('Error al actualizar estado.');
+  }
+}
+</script>
+{% endblock %}
