@@ -133,7 +133,6 @@ def update_status(delivery_id):
             import re
             lines = delivery.notes.split('\n')
             for line in lines:
-                # Buscar líneas como "- Águila 330ml x2 = $5.000"
                 match = re.match(r'- (.+) x(\d+) = \$', line)
                 if match:
                     product_name = match.group(1)
@@ -159,6 +158,7 @@ def update_status(delivery_id):
     delivery.status = new_status
     db.session.commit()
     return jsonify({'success': True, 'status': new_status})
+
 
 @deliveries_bp.route('/delete/<int:delivery_id>', methods=['POST'])
 @login_required
