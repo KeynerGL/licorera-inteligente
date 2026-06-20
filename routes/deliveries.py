@@ -101,8 +101,6 @@ def edit(delivery_id):
 
 @deliveries_bp.route('/status/<int:delivery_id>', methods=['POST'])
 @login_required
-@deliveries_bp.route('/status/<int:delivery_id>', methods=['POST'])
-@login_required
 def update_status(delivery_id):
     """Actualizar el estado de un domicilio vía AJAX."""
     delivery   = Delivery.query.get_or_404(delivery_id)
