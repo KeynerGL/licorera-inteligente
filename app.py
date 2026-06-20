@@ -22,7 +22,8 @@ app = Flask(__name__)
 
 # --- Configuración general ---
 app.config['SECRET_KEY'] = 'licorera-inteligente-secret-2024'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///licorera.db'
+import os
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///licorera.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # --- Inicializar SQLAlchemy con la app ---
