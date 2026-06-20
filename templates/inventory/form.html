@@ -64,6 +64,16 @@
       (<strong id="margin-pct">0%</strong>)
     </div>
 
+    <div class="form-group">
+  <label class="form-label">URL de imagen del producto (opcional)</label>
+  <input class="form-input" type="url" name="image_url"
+         value="{{ product.image_url if product else '' }}"
+         placeholder="https://ejemplo.com/imagen.jpg"
+         oninput="previewImage(this.value)"/>
+  <div id="img-preview" style="margin-top:10px; display:none">
+    <img id="preview-img" src="" style="width:100px; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border)"/>
+  </div>
+</div>
     <button class="btn btn-primary btn-block" type="submit">
       {{ '💾 Guardar Cambios' if product else '➕ Agregar Producto' }}
     </button>
@@ -88,5 +98,18 @@ function calcMargin() {
   }
 }
 calcMargin();
+function previewImage(url) {
+  const preview = document.getElementById('img-preview');
+  const img     = document.getElementById('preview-img');
+  if (url) {
+    img.src = url;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+}
+{% if product and product.image_url %}
+previewImage('{{ product.image_url }}');
+{% endif %}
 </script>
 {% endblock %}

@@ -60,7 +60,8 @@ def add():
                 quantity       = int(request.form['quantity']),
                 purchase_price = float(request.form['purchase_price']),
                 sale_price     = float(request.form['sale_price']),
-                min_stock      = int(request.form.get('min_stock', 5))
+                min_stock      = int(request.form.get('min_stock', 5)),
+                image_url      = request.form.get('image_url', '').strip()
             )
             db.session.add(product)
             db.session.commit()
@@ -87,6 +88,7 @@ def edit(product_id):
             product.purchase_price = float(request.form['purchase_price'])
             product.sale_price     = float(request.form['sale_price'])
             product.min_stock      = int(request.form.get('min_stock', 5))
+            product.image_url      = request.form.get('image_url', '').strip()
             db.session.commit()
             flash(f'Producto "{product.name}" actualizado.', 'success')
             return redirect(url_for('inventory.index'))
