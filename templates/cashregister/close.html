@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Cerrar Caja{% endblock %}
+{% block page_title %}Cerrar Caja{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">🔒 Cerrar Caja</h2>
+    <p class="page-sub">Registra el efectivo final del día.</p>
+  </div>
+  <a href="{{ url_for('cashregister.index') }}" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="card" style="max-width:460px">
+  <!-- Resumen del día -->
+  <div class="kpi-grid kpi-mini" style="margin-bottom:20px">
+    <div class="kpi-card kpi-green">
+      <div class="kpi-icon">💵</div>
+      <div class="kpi-info">
+        <div class="kpi-label">Apertura</div>
+        <div class="kpi-value">${{ "{:,.0f}".format(register.opening_amount) }}</div>
+      </div>
+    </div>
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-icon">🧾</div>
+      <div class="kpi-info">
+        <div class="kpi-label">Ventas del día</div>
+        <div class="kpi-value">${{ "{:,.0f}".format(sales_total) }}</div>
+      </div>
+    </div>
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-info">
+        <div class="kpi-label">Esperado en caja</div>
+        <div class="kpi-value">${{ "{:,.0f}".format(register.opening_amount + sales_total) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <form method="POST">
+    <div class="form-group">
+      <label class="form-label">Efectivo real en caja al cerrar (COP)</label>
+      <input class="form-input" type="number" name="closing_amount"
+             min="0" step="1000" placeholder="Ej: 150000" required
+             oninput="calcDiff()"/>
+    </div>
+
+    <!-- Vista previa diferencia -->
+    <div id="diff-preview" style="display:none; padding:12px; border-radius:8px; margin-bottom:14px; font-size:0.9rem;">
+      Diferencia: <strong id="diff-amount">$0</strong>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Notas (opcional)</label>
+      <textarea class="form-input" name="notes" rows="2"
+                placeholder="Ej: Todo cuadra, sin novedad...">{{ register.notes }}</textarea>
+    </div>
+    <button class="btn btn-warning btn-block" type="submit">🔒 Cerrar Caja</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const opening   = {{ register.opening_amount }};
+const salesTotal= {{ sales_total }};
+const expected  = opening + salesTotal;
+
+function calcDiff() {
+  const closing = parseFloat(document.getElementById('closing_amount')?.value ||
+                  document.querySelector('[name=closing_amount]').value) || 0;
+  const diff    = closing - expected;
+  const preview = document.getElementById('diff-preview');
+  const amount  = document.getElementById('diff-amount');
+
+  amount.textContent = '$' + diff.toLocaleString();
+  preview.style.display = 'block';
+  preview.style.background = diff === 0 ? 'rgba(16,185,129,0.1)' :
+                              diff > 0  ? 'rgba(59,130,246,0.1)' :
+                                          'rgba(239,68,68,0.1)';
+  preview.style.color = diff === 0 ? '#6ee7b7' : diff > 0 ? '#93c5fd' : '#fca5a5';
+  preview.style.border = `1px solid ${diff === 0 ? 'rgba(16,185,129,0.3)' :
+                          diff > 0 ? 'rgba(59,130,246,0.3)' : 'rgba(239,68,68,0.3)'}`;
+}
+</script>
+{% endblock %}

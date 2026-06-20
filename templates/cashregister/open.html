@@ -1,0 +1,30 @@
+Ahora crea templates/cashregister/open.html:
+html{% extends 'base.html' %}
+{% block title %}Abrir Caja{% endblock %}
+{% block page_title %}Abrir Caja{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">💰 Abrir Caja</h2>
+    <p class="page-sub">Registra el efectivo inicial del día.</p>
+  </div>
+  <a href="{{ url_for('cashregister.index') }}" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="card" style="max-width:460px">
+  <form method="POST">
+    <div class="form-group">
+      <label class="form-label">Efectivo inicial en caja (COP)</label>
+      <input class="form-input" type="number" name="opening_amount"
+             min="0" step="1000" placeholder="Ej: 50000" required/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notas (opcional)</label>
+      <textarea class="form-input" name="notes" rows="3"
+                placeholder="Ej: Caja iniciada con billete de $50.000..."></textarea>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">✅ Abrir Caja</button>
+  </form>
+</div>
+{% endblock %}

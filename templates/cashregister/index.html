@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Caja Diaria{% endblock %}
+{% block page_title %}Caja Diaria{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2 class="page-title">💰 Caja Diaria</h2>
+    <p class="page-sub">Control de apertura y cierre de caja.</p>
+  </div>
+  {% if not today_register %}
+  <a href="{{ url_for('cashregister.open_register') }}" class="btn btn-primary">+ Abrir Caja</a>
+  {% elif today_register.status == 'Abierta' %}
+  <a href="{{ url_for('cashregister.close_register', register_id=today_register.id) }}" class="btn btn-warning">🔒 Cerrar Caja</a>
+  {% endif %}
+</div>
+
+<!-- Estado de hoy -->
+{% if today_register %}
+<div class="kpi-grid">
+  <div class="kpi-card kpi-green">
+    <div class="kpi-icon">💵</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Apertura</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(today_register.opening_amount) }}</div>
+    </div>
+  </div>
+  <div class="kpi-card kpi-blue">
+    <div class="kpi-icon">🧾</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Ventas del día</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(today_register.sales_total) }}</div>
+    </div>
+  </div>
+  <div class="kpi-card kpi-purple">
+    <div class="kpi-icon">📊</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Estado</div>
+      <div class="kpi-value">{{ today_register.status }}</div>
+    </div>
+  </div>
+  {% if today_register.status == 'Cerrada' %}
+  <div class="kpi-card {% if today_register.difference == 0 %}kpi-green{% elif today_register.difference > 0 %}kpi-blue{% else %}kpi-orange{% endif %}">
+    <div class="kpi-icon">{{ '✅' if today_register.difference == 0 else '⚠️' }}</div>
+    <div class="kpi-info">
+      <div class="kpi-label">Diferencia</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(today_register.difference) }}</div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% else %}
+<div class="card" style="text-align:center; padding:40px">
+  <div style="font-size:3rem; margin-bottom:16px">💰</div>
+  <h3 style="margin-bottom:8px">No hay caja abierta hoy</h3>
+  <p style="color:var(--text-muted); margin-bottom:20px">Abre la caja para empezar a registrar ventas del día.</p>
+  <a href="{{ url_for('cashregister.open_register') }}" class="btn btn-primary">+ Abrir Caja Ahora</a>
+</div>
+{% endif %}
+
+<!-- Historial -->
+<div class="card">
+  <h3 class="card-title">📅 Historial de Cajas</h3>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fecha</th><th>Apertura</th><th>Ventas</th>
+          <th>Cierre</th><th>Diferencia</th><th>Estado</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in registers %}
+        <tr>
+          <td>{{ r.date.strftime('%d/%m/%Y') }}</td>
+          <td>${{ "{:,.0f}".format(r.opening_amount) }}</td>
+          <td>${{ "{:,.0f}".format(r.sales_total) }}</td>
+          <td>${{ "{:,.0f}".format(r.closing_amount) }}</td>
+          <td class="{% if r.difference > 0 %}text-success{% elif r.difference < 0 %}text-danger{% endif %}">
+            ${{ "{:,.0f}".format(r.difference) }}
+          </td>
+          <td>
+            <span class="badge {% if r.status == 'Abierta' %}badge-green{% else %}badge-blue{% endif %}">
+              {{ r.status }}
+            </span>
+          </td>
+          <td>
+            {% if r.status == 'Abierta' %}
+            <a href="{{ url_for('cashregister.close_register', register_id=r.id) }}" class="btn btn-sm btn-warning">Cerrar</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="empty-state">No hay cajas registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -44,6 +44,9 @@
     <a href="{{ url_for('reports.index') }}" class="nav-item {% if request.blueprint == 'reports' %}active{% endif %}">
       <span class="nav-icon">📈</span><span class="nav-label">Reportes</span>
     </a>
+    <a href="{{ url_for('cashregister.index') }}" class="nav-item {% if request.blueprint == 'cashregister' %}active{% endif %}">
+      <span class="nav-icon">💰</span><span class="nav-label">Caja Diaria</span>
+    </a>
     {% if current_user.is_admin() %}
     <a href="{{ url_for('auth.users') }}" class="nav-item {% if request.blueprint == 'auth' and request.endpoint != 'auth.login' %}active{% endif %}">
       <span class="nav-icon">👥</span><span class="nav-label">Usuarios</span>
