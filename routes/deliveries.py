@@ -101,18 +101,64 @@ def edit(delivery_id):
 
 @deliveries_bp.route('/status/<int:delivery_id>', methods=['POST'])
 @login_required
+@deliveries_bp.route('/status/<int:delivery_id>', methods=['POST'])
+@login_required
 def update_status(delivery_id):
     """Actualizar el estado de un domicilio vía AJAX."""
     delivery   = Delivery.query.get_or_404(delivery_id)
     new_status = request.form.get('status')
 
-    if new_status in DELIVERY_STATUSES:
-        delivery.status = new_status
-        db.session.commit()
-        return jsonify({'success': True, 'status': new_status})
+    if new_status not in DELIVERY_STATUSES:
+        return jsonify({'error': 'Estado inválido.'}), 400
 
-    return jsonify({'error': 'Estado inválido.'}), 400
+    # Si se marca como Entregado, registrar venta y descontar inventario
+    if new_status == 'Entregado' and delivery.status != 'Entregado':
+        if delivery.total > 0:
+            from models.sale import Sale, SaleItem
+            from models.product import Product
+            from models.user import User
 
+            # Crear venta
+            sale = Sale(
+                user_id    = current_user.id,
+                total      = delivery.total,
+                total_cost = 0,
+                profit     = 0,
+                notes      = f'Domicilio #{delivery.id} - {delivery.customer_name}'
+            )
+            db.session.add(sale)
+            db.session.flush()
+
+            # Parsear productos del pedido desde las notas
+            import re
+            lines = delivery.notes.split('\n')
+            for line in lines:
+                # Buscar líneas como "- Águila 330ml x2 = $5.000"
+                match = re.match(r'- (.+) x(\d+) = \$', line)
+                if match:
+                    product_name = match.group(1)
+                    quantity     = int(match.group(2))
+                    product = Product.query.filter(
+                        Product.name.ilike(f'%{product_name}%'),
+                        Product.is_active == True
+                    ).first()
+                    if product and product.quantity >= quantity:
+                        sale_item = SaleItem(
+                            sale_id        = sale.id,
+                            product_id     = product.id,
+                            quantity       = quantity,
+                            unit_price     = product.sale_price,
+                            purchase_price = product.purchase_price,
+                            subtotal       = quantity * product.sale_price
+                        )
+                        db.session.add(sale_item)
+                        product.quantity -= quantity
+
+            sale.calculate_totals()
+
+    delivery.status = new_status
+    db.session.commit()
+    return jsonify({'success': True, 'status': new_status})
 
 @deliveries_bp.route('/delete/<int:delivery_id>', methods=['POST'])
 @login_required
