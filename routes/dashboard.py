@@ -70,18 +70,18 @@ def get_sales_by_day_of_week():
     """Ventas agrupadas por día de la semana (últimas 4 semanas)."""
     four_weeks_ago = datetime.now() - timedelta(weeks=4)
     results = db.session.query(
-        func.strftime('%w', Sale.created_at).label('dow'),   # 0=Dom, 1=Lun...
+        func.extract('dow', Sale.created_at).label('dow'),
         func.coalesce(func.sum(Sale.total), 0).label('total')
     ).filter(Sale.created_at >= four_weeks_ago
-    ).group_by(func.strftime('%w', Sale.created_at)
+    ).group_by(func.extract('dow', Sale.created_at)
     ).all()
 
-    days_map  = {'0':'Dom','1':'Lun','2':'Mar','3':'Mié','4':'Jue','5':'Vie','6':'Sáb'}
+    days_map  = {0:'Dom', 1:'Lun', 2:'Mar', 3:'Mié', 4:'Jue', 5:'Vie', 6:'Sáb'}
     day_totals = {d: 0 for d in days_map.values()}
     for r in results:
-        day_totals[days_map.get(r.dow, '?')] = float(r.total)
+        dow = int(r.dow) if r.dow is not None else 0
+        day_totals[days_map.get(dow, '?')] = float(r.total)
     return day_totals
-
 
 def get_sales_last_7_days():
     """Ventas de los últimos 7 días para gráfica."""
