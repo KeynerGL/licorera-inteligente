@@ -6,3 +6,4 @@ psycopg2-binary
 gunicorn
 waitress
 xhtml2pdf
+twilio
