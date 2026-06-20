@@ -15,6 +15,7 @@ from routes.sales import sales_bp
 from routes.deliveries import deliveries_bp
 from routes.dashboard import dashboard_bp
 from routes.reports import reports_bp
+from routes.store import store_bp
 import os
 
 # --- Crear instancia de Flask ---
@@ -48,6 +49,7 @@ app.register_blueprint(sales_bp,      url_prefix='/sales')
 app.register_blueprint(deliveries_bp, url_prefix='/deliveries')
 app.register_blueprint(dashboard_bp,  url_prefix='/')
 app.register_blueprint(reports_bp,    url_prefix='/reports')
+app.register_blueprint(store_bp, url_prefix='/store')
 
 # --- Ruta raíz: redirige al dashboard ---
 @app.route('/')

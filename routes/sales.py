@@ -10,6 +10,8 @@ from flask_login import login_required, current_user
 from models.sale import Sale, SaleItem
 from models.product import Product
 from database import db
+from utils.whatsapp import send_low_stock_alert
+from models.product import Product
 from datetime import datetime, date, timedelta
 import json
 
@@ -100,7 +102,13 @@ def new():
         db.session.flush()
         sale.calculate_totals()
         db.session.commit()
-
+        # Verificar stock bajo y enviar alerta WhatsApp
+        low_stock = Product.query.filter(
+            Product.quantity <= Product.min_stock,
+            Product.is_active == True
+        ).all()
+        if low_stock:
+            send_low_stock_alert(low_stock)
         return jsonify({
             'success': True,
             'sale_id': sale.id,
