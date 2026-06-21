@@ -6,8 +6,7 @@
 # ============================================================
 
 from flask import Flask, redirect, url_for
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from extensions import limiter
 from flask_login import LoginManager
 from database import db, init_db
 from models.user import User
@@ -24,13 +23,7 @@ import os
 # --- Crear instancia de Flask ---
 app = Flask(__name__)
 
-# --- Protección anti-spam y fuerza bruta ---
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=[],
-    storage_uri="memory://"
-)
+limiter.init_app(app)
 
 # --- Configuración general ---
 app.config['SECRET_KEY'] = 'licorera-inteligente-secret-2024'

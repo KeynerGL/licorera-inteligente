@@ -23,7 +23,7 @@ def admin_required(f):
     return decorated_function
 
 
-from app import limiter
+from extensions import limiter
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
