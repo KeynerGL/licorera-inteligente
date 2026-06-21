@@ -18,7 +18,10 @@ def index():
     return render_template('store/index.html', products=products)
 
 
+from app import limiter
+
 @store_bp.route('/order', methods=['POST'])
+@limiter.limit("3 per minute")
 def place_order():
     """Registrar pedido del cliente."""
     data = request.get_json()

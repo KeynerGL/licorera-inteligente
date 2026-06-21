@@ -7,3 +7,4 @@ gunicorn
 waitress
 xhtml2pdf
 twilio
+flask-limiter
