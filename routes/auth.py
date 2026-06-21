@@ -26,7 +26,7 @@ def admin_required(f):
 from extensions import limiter
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("5 per minute", methods=["POST"])
 def login():
     """Página de inicio de sesión."""
     if current_user.is_authenticated:
