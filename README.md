@@ -1,162 +1,201 @@
 # 🍾 Licorera Inteligente
 
-Sistema de gestión para licoreras de barrio en Colombia.
-Controla inventario, ventas, domicilios y genera reportes automáticos.
+Sistema de gestión completo para licoreras de barrio en Colombia.
+Controla inventario, ventas, domicilios, caja diaria y tienda online.
 
 ---
 
-## ✅ Requisitos previos
+## 🌐 URL de la aplicación
 
-Necesitas tener instalado en tu computador:
-
-- **Python 3.10 o superior** → Descarga en: https://www.python.org/downloads/
-  - ⚠️ Al instalar Python en Windows, marca la casilla **"Add Python to PATH"**
-- **Git** (opcional) → https://git-scm.com/
-
----
-
-## 🚀 Instalación paso a paso
-
-### Paso 1 — Abre la terminal
-
-- **Windows:** Busca "CMD" o "Símbolo del sistema" en el menú inicio
-- **Mac/Linux:** Abre la app "Terminal"
+| Acceso | URL |
+|---|---|
+| **Panel Admin** | `licorera-inteligente-production.up.railway.app` |
+| **Tienda Online** | `licorera-inteligente-production.up.railway.app/store` |
 
 ---
 
-### Paso 2 — Ve a la carpeta del proyecto
+## 🔐 Usuarios del sistema
 
-Si descargaste el proyecto como ZIP, descomprímelo. Luego escribe en la terminal:
+| Usuario | Contraseña | Rol |
+|---|---|---|
+| `admin` | *(tu contraseña)* | Administrador |
+| `empleado` | *(tu contraseña)* | Empleado |
 
-```bash
-cd ruta/a/licorera_inteligente
-```
-
-Por ejemplo en Windows:
-```
-cd C:\Users\TuNombre\Desktop\licorera_inteligente
-```
+⚠️ **Nunca compartas las contraseñas.**
 
 ---
 
-### Paso 3 — Crea un entorno virtual
+## ✅ Funcionalidades
 
-Un entorno virtual es una "caja" donde se instalan las librerías sin afectar tu computador.
+### 📦 Inventario
+- Agregar, editar y eliminar productos
+- Categorías: Cerveza, Aguardiente, Ron, Whisky, Vino, Snacks y Otros
+- Alertas de stock bajo automáticas
+- Fotos de productos con URL
 
-**Windows:**
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
+### 💰 Ventas
+- Registrar ventas con carrito
+- Descuento automático del inventario
+- Cálculo de ganancias en tiempo real
+- Historial de ventas con filtros
+- Anular ventas (restaura el inventario)
 
-**Mac/Linux:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
+### 🛵 Domicilios
+- Registrar pedidos a domicilio
+- Estados: Pendiente, En camino, Entregado
+- Al marcar como Entregado → descuenta inventario y registra venta automáticamente
 
-Sabrás que está activo porque verás `(venv)` al inicio de la línea de la terminal.
+### 🛒 Tienda Online
+- Catálogo de productos con fotos
+- Carrito de compras
+- Pedidos llegan directo a Domicilios
+- Accesible desde cualquier celular
+
+### 📊 Dashboard
+- Ventas del día y del mes
+- Ganancia neta
+- Productos más vendidos
+- Productos con stock bajo
+- Gráficas de los últimos 7 días
+- Recomendaciones automáticas de inteligencia de negocio
+
+### 📈 Reportes
+- Reporte diario, semanal y mensual
+- Rango de fechas personalizado
+- Exportar a PDF
+
+### 💰 Caja Diaria
+- Apertura de caja con efectivo inicial
+- Cierre de caja con conteo de efectivo
+- Detecta diferencias automáticamente
+- Historial de cajas
+
+### 📱 Notificaciones WhatsApp
+- Alerta automática cuando un producto tiene stock bajo
+- Configurado con Twilio Sandbox
+
+### 👥 Usuarios
+- Roles: Administrador y Empleado
+- Activar/desactivar usuarios
+- Contraseñas hasheadas de forma segura
+
+### 🔒 Seguridad
+- HTTPS activado por Railway
+- Contraseñas hasheadas con Werkzeug
+- Login obligatorio para el panel admin
+- Protección anti-spam en la tienda
+- Protección anti-fuerza bruta en el login
 
 ---
 
-### Paso 4 — Instala las dependencias
-
-```bash
-pip install -r requirements.txt
-```
-
-Esto descarga Flask y todo lo necesario. Puede tardar 1-2 minutos.
-
----
-
-### Paso 5 — Ejecuta la aplicación
-
-```bash
-python app.py
-```
-
-Verás algo como:
-```
-✅ Base de datos inicializada correctamente.
- * Running on http://127.0.0.1:5000
-```
-
----
-
-### Paso 6 — Abre el navegador
-
-Ve a: **http://127.0.0.1:5000**
-
----
-
-## 🔐 Usuarios por defecto
-
-| Usuario    | Contraseña | Rol           |
-|------------|------------|---------------|
-| `admin`    | `admin123` | Administrador |
-| `empleado` | `emp123`   | Empleado      |
-
-⚠️ **Cambia las contraseñas** después de tu primera entrada.
-
----
-
-## 📁 Estructura del proyecto
+## 🏗️ Estructura del proyecto
 
 ```
 licorera_inteligente/
-├── app.py                  ← Punto de entrada principal
-├── database.py             ← Configuración de la base de datos
-├── requirements.txt        ← Librerías necesarias
+├── app.py                    ← Punto de entrada principal
+├── database.py               ← Configuración base de datos
+├── extensions.py             ← Flask-Limiter (seguridad)
+├── requirements.txt          ← Librerías necesarias
+├── Procfile                  ← Configuración Railway
+├── migrate.py                ← Script de migraciones
 ├── models/
-│   ├── user.py             ← Modelo de usuarios
-│   ├── product.py          ← Modelo de inventario
-│   ├── sale.py             ← Modelo de ventas
-│   └── delivery.py         ← Modelo de domicilios
+│   ├── user.py               ← Usuarios y autenticación
+│   ├── product.py            ← Inventario
+│   ├── sale.py               ← Ventas
+│   ├── delivery.py           ← Domicilios
+│   └── cashregister.py       ← Caja diaria
 ├── routes/
-│   ├── auth.py             ← Rutas de autenticación
-│   ├── inventory.py        ← Rutas de inventario
-│   ← sales.py             ← Rutas de ventas
-│   ├── deliveries.py       ← Rutas de domicilios
-│   ├── dashboard.py        ← Dashboard e inteligencia
-│   └── reports.py          ← Reportes y PDF
-├── templates/              ← Páginas HTML
+│   ├── auth.py               ← Login y usuarios
+│   ├── inventory.py          ← Inventario
+│   ├── sales.py              ← Ventas
+│   ├── deliveries.py         ← Domicilios
+│   ├── dashboard.py          ← Dashboard e inteligencia
+│   ├── reports.py            ← Reportes y PDF
+│   ├── store.py              ← Tienda online
+│   └── cashregister.py       ← Caja diaria
+├── utils/
+│   └── whatsapp.py           ← Notificaciones WhatsApp
+├── templates/                ← Páginas HTML
 │   ├── base.html
 │   ├── auth/
 │   ├── dashboard/
 │   ├── inventory/
 │   ├── sales/
 │   ├── deliveries/
-│   └── reports/
+│   ├── reports/
+│   ├── store/
+│   └── cashregister/
 └── static/
-    ├── css/style.css       ← Diseño visual
-    └── js/main.js          ← JavaScript
+    ├── css/style.css         ← Diseño visual
+    ├── js/main.js            ← JavaScript
+    └── img/favicon.ico       ← Ícono de la app
 ```
 
 ---
 
-## 🛑 Cómo detener la aplicación
+## 🚀 Tecnologías
 
-En la terminal donde corre el servidor, presiona **Ctrl + C**.
+| Tecnología | Uso |
+|---|---|
+| Python + Flask | Backend |
+| SQLAlchemy | ORM base de datos |
+| PostgreSQL | Base de datos en producción |
+| SQLite | Base de datos local |
+| Jinja2 | Plantillas HTML |
+| Werkzeug | Seguridad contraseñas |
+| Flask-Login | Sesiones de usuario |
+| Flask-Limiter | Anti-spam y fuerza bruta |
+| Twilio | Notificaciones WhatsApp |
+| xhtml2pdf | Exportar reportes a PDF |
+| Waitress | Servidor de producción |
+| Railway | Hosting en la nube |
+| Chart.js | Gráficas del dashboard |
 
 ---
 
-## ❓ Problemas comunes
+## 🛠️ Instalación local
 
-**"python no se reconoce como comando"**
-→ Reinstala Python y marca "Add to PATH". O usa `python3` en Mac/Linux.
+### Requisitos
+- Python 3.10 o superior
+- Git
 
-**"No module named flask"**
-→ Asegúrate de tener el entorno virtual activo (debe decir `(venv)`) y ejecuta `pip install -r requirements.txt` de nuevo.
+### Pasos
 
-**Puerto 5000 ocupado**
-→ Cambia el puerto en `app.py`: `app.run(port=5001)`
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/KeynerGL/licorera-inteligente.git
+cd licorera-inteligente
+
+# 2. Crear entorno virtual
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# Mac/Linux
+source venv/bin/activate
+
+# 3. Instalar dependencias
+pip install -r requirements.txt
+
+# 4. Ejecutar
+python app.py
+```
+
+Abre: **http://127.0.0.1:5000**
 
 ---
 
-## 💡 Consejos de uso
+## ☁️ Variables de entorno en Railway
 
-1. **Empieza por el Inventario** — agrega tus productos reales
-2. **Usa Nueva Venta** para registrar cada venta del día
-3. **Revisa el Dashboard** cada mañana para ver el resumen
-4. **Los Reportes** te dan el PDF para tu contabilidad
-5. **Domicilios** te ayuda a rastrear pedidos en tiempo real
+| Variable | Descripción |
+|---|---|
+| `DATABASE_URL` | URL de PostgreSQL |
+| `PORT` | Puerto (5000) |
+| `TWILIO_ACCOUNT_SID` | Account SID de Twilio |
+| `TWILIO_AUTH_TOKEN` | Auth Token de Twilio |
+| `TWILIO_WHATSAPP_TO` | Tu número WhatsApp (+57XXXXXXXXXX) |
+
+---
+
+*Desarrollado con ❤️ para licoreras de barrio en Colombia 🇨🇴*
