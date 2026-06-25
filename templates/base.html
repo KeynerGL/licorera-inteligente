@@ -15,6 +15,30 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+<style>
+  /* ANIMACIÓN DE CARGA DE PÁGINA */
+  .page-content {
+    animation: fadeInUp 0.4s ease forwards;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* BARRA DE PROGRESO ARRIBA */
+  .page-loader {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #D4A843, #10b981);
+    z-index: 9999;
+    animation: loadBar 0.5s ease forwards;
+  }
+  @keyframes loadBar {
+    from { width: 0%; }
+    to   { width: 100%; }
+  }
+</style>
 </head>
 <body>
 
@@ -92,6 +116,7 @@
   <!-- Contenido de cada página -->
   <div class="page-content">
     {% block content %}{% endblock %}
+    <div class="page-loader" id="page-loader"></div>
   </div>
 </main>
 
