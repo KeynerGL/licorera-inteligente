@@ -188,5 +188,32 @@ new Chart(document.getElementById('dowChart'), {
     }
   }
 });
+// ===== Contador animado en KPIs =====
+function animateCounter(element, target, prefix = '$') {
+  const duration = 1000;
+  const start    = 0;
+  const step     = target / (duration / 16);
+  let current    = start;
+
+  const timer = setInterval(() => {
+    current += step;
+    if (current >= target) {
+      current = target;
+      clearInterval(timer);
+    }
+    element.textContent = prefix + Math.round(current).toLocaleString();
+  }, 16);
+}
+
+// Animar todos los KPIs al cargar
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.kpi-value').forEach(el => {
+    const text   = el.textContent.trim();
+    const number = parseFloat(text.replace(/[$,]/g, ''));
+    if (!isNaN(number) && number > 0) {
+      animateCounter(el, number);
+    }
+  });
+});
 </script>
 {% endblock %}
