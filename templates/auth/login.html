@@ -3,31 +3,180 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico"/>
   <title>Iniciar Sesión — Licorera Inteligente</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
-</head>
-<body class="login-page">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* FONDO CON IMAGEN DE BOTELLAS */
+    .bg {
+      position: fixed;
+      inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=1600&q=80');
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.3) blur(2px);
+      z-index: 0;
+      transform: scale(1.05);
+    }
+
+    /* OVERLAY GRADIENTE */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg,
+        rgba(10,17,40,0.85) 0%,
+        rgba(99,102,241,0.3) 100%);
+      z-index: 1;
+    }
+
+    /* TARJETA DE LOGIN */
+    .login-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 420px;
+      margin: 20px;
+      background: rgba(30,41,59,0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 44px 40px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      animation: slideUp 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* BRAND */
+    .login-brand { text-align: center; margin-bottom: 32px; }
+    .login-logo  { font-size: 3.5rem; margin-bottom: 10px; display: block;
+                    animation: bounce 2s infinite; }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+    .login-title {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.9rem;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+    .login-subtitle { color: #94a3b8; font-size: 0.875rem; }
+
+    /* ALERTAS */
+    .alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;
+              font-size: 0.85rem; font-weight: 500; }
+    .alert-danger  { background: rgba(239,68,68,0.15); color: #fca5a5;
+                      border: 1px solid rgba(239,68,68,0.3); }
+    .alert-success { background: rgba(16,185,129,0.15); color: #6ee7b7;
+                      border: 1px solid rgba(16,185,129,0.3); }
+    .alert-warning { background: rgba(245,158,11,0.15); color: #fcd34d;
+                      border: 1px solid rgba(245,158,11,0.3); }
+    .alert-info    { background: rgba(59,130,246,0.15); color: #93c5fd;
+                      border: 1px solid rgba(59,130,246,0.3); }
+
+    /* FORMULARIO */
+    .form-group   { margin-bottom: 18px; }
+    .form-label   { display: block; font-size: 0.75rem; font-weight: 600;
+                     color: #94a3b8; text-transform: uppercase;
+                     letter-spacing: 0.06em; margin-bottom: 8px; }
+    .form-input   {
+      width: 100%; padding: 12px 16px;
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: #f1f5f9;
+      font-size: 0.95rem; font-family: 'Poppins', sans-serif;
+      transition: all 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      background: rgba(15,23,42,0.8);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+    }
+    .form-input::placeholder { color: #475569; }
+
+    /* PASSWORD TOGGLE */
+    .password-wrapper { position: relative; }
+    .password-toggle  {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 1.1rem; color: #64748b;
+      transition: color 0.2s;
+    }
+    .password-toggle:hover { color: #94a3b8; }
+
+    /* BOTÓN */
+    .btn-login {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      color: white; border: none; border-radius: 10px;
+      font-size: 1rem; font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer; transition: all 0.2s;
+      margin-top: 6px;
+      box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+    }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99,102,241,0.5);
+    }
+    .btn-login:active { transform: translateY(0); }
+
+    /* HINT */
+    .login-hint {
+      text-align: center; margin-top: 20px;
+      color: #475569; font-size: 0.78rem;
+      padding: 12px; background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .login-container { padding: 32px 24px; margin: 16px; }
+      .login-title { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- FONDO -->
+<div class="bg"></div>
+<div class="overlay"></div>
+
+<!-- TARJETA LOGIN -->
 <div class="login-container">
   <div class="login-brand">
-    <div class="login-logo">🍾</div>
-    <h1 class="login-title">Licorera<br><strong>Inteligente</strong></h1>
+    <span class="login-logo">🍾</span>
+    <h1 class="login-title">Licorera Inteligente</h1>
     <p class="login-subtitle">Sistema de gestión para tu negocio</p>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
-        <div class="alert alert-{{ category }}" style="margin-bottom:1rem">
-          {{ message }}
-        </div>
+        <div class="alert alert-{{ category }}">{{ message }}</div>
       {% endfor %}
     {% endif %}
   {% endwith %}
 
-  <form class="login-form" method="POST" action="{{ url_for('auth.login') }}">
+  <form method="POST" action="{{ url_for('auth.login') }}">
     <div class="form-group">
       <label class="form-label" for="username">Usuario</label>
       <input class="form-input" type="text" id="username" name="username"
@@ -43,14 +192,12 @@
       </div>
     </div>
 
-    <button class="btn btn-primary btn-block" type="submit">Iniciar Sesión</button>
+    <button class="btn-login" type="submit">Iniciar Sesión →</button>
   </form>
 
   <div class="login-hint">
-    <small>
-      👤 <strong>Admin:</strong> admin / admin123 &nbsp;|&nbsp;
-      👤 <strong>Empleado:</strong> empleado / emp123
-    </small>
+    👤 <strong>Admin:</strong> admin &nbsp;|&nbsp;
+    👤 <strong>Empleado:</strong> empleado
   </div>
 </div>
 
