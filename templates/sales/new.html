@@ -71,6 +71,8 @@
 </div>
 {% endblock %}
 
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
 {% block scripts %}
 <script>
 // ===== Estado del carrito =====
@@ -235,6 +237,14 @@ async function confirmSale() {
       document.getElementById('success-modal').style.display = 'flex';
       clearCart();
       loadProducts(); // Refrescar stocks
+
+      // 🎉 Confeti al registrar venta
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#6366f1', '#10b981', '#D4A843', '#f1f5f9']
+      });
     } else {
       alert('Error: ' + data.error);
     }
