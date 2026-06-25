@@ -125,4 +125,5 @@ def api_products():
         'category'   : p.category,
         'quantity'   : p.quantity,
         'sale_price' : p.sale_price,
+        'image_url' : p.image_url or ''
     } for p in products])

@@ -41,7 +41,7 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Producto</th>
+          <th>Foto</th><th>Producto</th>
           <th>Categoría</th>
           <th>Stock</th>
           <th>P. Compra</th>
@@ -54,6 +54,14 @@
       <tbody>
         {% for p in products %}
         <tr class="{% if p.is_low_stock %}row-warning{% endif %}">
+          <td>
+            {% if p.image_url %}
+            <img src="{{ p.image_url }}" alt="{{ p.name }}"
+                style="width:50px; height:50px; object-fit:contain; border-radius:6px; background:#f8fafc;"/>
+            {% else %}
+            <span style="font-size:1.8rem">🍾</span>
+            {% endif %}
+          </td>
           <td><strong>{{ p.name }}</strong></td>
           <td><span class="category-badge cat-{{ p.category|lower|replace(' ','') }}">{{ p.category }}</span></td>
           <td>
