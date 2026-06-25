@@ -439,3 +439,44 @@ code { background: var(--bg-tertiary); padding: 2px 7px; border-radius: 4px; fon
   body  { background: white; color: #000; }
   .kpi-value, .page-title { color: #000; }
 }
+/* ===== INVENTARIO VISTA TARJETAS ===== */
+.inv-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.inv-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.inv-card:hover { transform: translateY(-3px); border-color: var(--accent-indigo); box-shadow: var(--shadow); }
+.inv-card-warning { border-color: rgba(245,158,11,0.4); }
+.inv-card-img {
+  width: 100%; height: 160px;
+  background: #f8fafc;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.inv-card-img img { max-width: 100%; max-height: 160px; object-fit: contain; }
+.inv-card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.inv-card-cat  { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.inv-card-name { font-weight: 700; font-size: 0.9rem; line-height: 1.3; }
+.inv-card-prices { display: flex; gap: 12px; }
+.inv-price-item { display: flex; flex-direction: column; }
+.inv-price-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; }
+.inv-price-val   { font-weight: 700; font-size: 0.9rem; }
+.inv-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+.inv-stock     { font-size: 0.78rem; font-weight: 600; }
+.inv-stock-ok  { color: var(--accent-green); }
+.inv-stock-low { color: var(--accent-orange); }
+.inv-stock-out { color: var(--accent-red); }
+.inv-margin    { font-size: 0.72rem; font-weight: 700; padding: 3px 8px;
+                  background: rgba(16,185,129,0.15); color: #6ee7b7; border-radius: 20px; }
+.inv-card-actions { display: flex; gap: 6px; margin-top: 10px; }
+.inv-card-actions .btn { flex: 1; justify-content: center; }

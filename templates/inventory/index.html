@@ -7,19 +7,22 @@
   <div>
     <h2 class="page-title">📦 Inventario</h2>
     <p class="page-sub">
-      {{ products|length }} producto(s) encontrado(s)
+      {{ products|length }} producto(s)
       {% if low_count %} · <span class="text-danger">⚠️ {{ low_count }} con stock bajo</span>{% endif %}
     </p>
   </div>
-  {% if current_user.is_admin() %}
-  <a href="{{ url_for('inventory.add') }}" class="btn btn-primary">+ Agregar Producto</a>
-  {% endif %}
+  <div class="action-btns">
+    {% if current_user.is_admin() %}
+    <a href="{{ url_for('inventory.add') }}" class="btn btn-primary">+ Agregar</a>
+    {% endif %}
+    <button class="btn btn-outline" onclick="toggleView()" id="view-btn">☰ Tabla</button>
+  </div>
 </div>
 
 <!-- Filtros -->
 <div class="card filters-card">
   <form method="GET" class="filters-form">
-    <input class="form-input" type="text" name="search" placeholder="🔍 Buscar producto..." value="{{ search }}"/>
+    <input class="form-input" type="text" name="search" placeholder="🔍 Buscar..." value="{{ search }}"/>
     <select class="form-input" name="category" onchange="this.form.submit()">
       <option value="">Todas las categorías</option>
       {% for cat in categories %}
@@ -35,19 +38,67 @@
   </form>
 </div>
 
-<!-- Tabla de productos -->
-<div class="card">
+<!-- VISTA TARJETAS -->
+<div class="inv-cards-grid" id="cards-view">
+  {% for p in products %}
+  <div class="inv-card {% if p.is_low_stock %}inv-card-warning{% endif %}">
+    <div class="inv-card-img">
+      {% if p.image_url %}
+      <img src="{{ p.image_url }}" alt="{{ p.name }}"
+           onerror="this.parentElement.innerHTML='<span style=\'font-size:3rem\'>🍾</span>'"/>
+      {% else %}
+      <span style="font-size:3rem">🍾</span>
+      {% endif %}
+    </div>
+    <div class="inv-card-body">
+      <div class="inv-card-cat">{{ p.category }}</div>
+      <div class="inv-card-name">{{ p.name }}</div>
+      <div class="inv-card-prices">
+        <div class="inv-price-item">
+          <span class="inv-price-label">Compra</span>
+          <span class="inv-price-val">${{ "{:,.0f}".format(p.purchase_price) }}</span>
+        </div>
+        <div class="inv-price-item">
+          <span class="inv-price-label">Venta</span>
+          <span class="inv-price-val text-success">${{ "{:,.0f}".format(p.sale_price) }}</span>
+        </div>
+      </div>
+      <div class="inv-card-footer">
+        <div class="inv-stock {% if p.quantity == 0 %}inv-stock-out{% elif p.is_low_stock %}inv-stock-low{% else %}inv-stock-ok{% endif %}">
+          {% if p.quantity == 0 %}
+            ❌ Agotado
+          {% elif p.is_low_stock %}
+            ⚠️ Stock: {{ p.quantity }}
+          {% else %}
+            ✅ Stock: {{ p.quantity }}
+          {% endif %}
+        </div>
+        <span class="inv-margin">+{{ p.profit_percent }}%</span>
+      </div>
+      {% if current_user.is_admin() %}
+      <div class="inv-card-actions">
+        <a href="{{ url_for('inventory.edit', product_id=p.id) }}" class="btn btn-sm btn-outline">✏️ Editar</a>
+        <form method="POST" action="{{ url_for('inventory.delete', product_id=p.id) }}"
+              onsubmit="return confirm('¿Eliminar {{ p.name }}?')" style="display:inline">
+          <button class="btn btn-sm btn-danger" type="submit">🗑</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state" style="grid-column:1/-1">No se encontraron productos.</div>
+  {% endfor %}
+</div>
+
+<!-- VISTA TABLA -->
+<div class="card" id="table-view" style="display:none">
   <div class="table-wrapper">
     <table class="data-table">
       <thead>
         <tr>
-          <th>Foto</th><th>Producto</th>
-          <th>Categoría</th>
-          <th>Stock</th>
-          <th>P. Compra</th>
-          <th>P. Venta</th>
-          <th>Margen</th>
-          <th>Estado</th>
+          <th>Foto</th><th>Producto</th><th>Categoría</th><th>Stock</th>
+          <th>P. Compra</th><th>P. Venta</th><th>Margen</th><th>Estado</th>
           {% if current_user.is_admin() %}<th>Acciones</th>{% endif %}
         </tr>
       </thead>
@@ -56,8 +107,7 @@
         <tr class="{% if p.is_low_stock %}row-warning{% endif %}">
           <td>
             {% if p.image_url %}
-            <img src="{{ p.image_url }}" alt="{{ p.name }}"
-                style="width:50px; height:50px; object-fit:contain; border-radius:6px; background:#f8fafc;"/>
+            <img src="{{ p.image_url }}" style="width:45px;height:45px;object-fit:contain;border-radius:6px;background:#f8fafc;"/>
             {% else %}
             <span style="font-size:1.8rem">🍾</span>
             {% endif %}
@@ -65,20 +115,14 @@
           <td><strong>{{ p.name }}</strong></td>
           <td><span class="category-badge cat-{{ p.category|lower|replace(' ','') }}">{{ p.category }}</span></td>
           <td>
-            <div class="stock-cell">
-              <span class="stock-num {% if p.quantity == 0 %}text-danger{% elif p.is_low_stock %}text-warning{% else %}text-success{% endif %}">
-                {{ p.quantity }}
-              </span>
-              {% if p.is_low_stock %}
-                <span class="stock-alert" title="Stock mínimo: {{ p.min_stock }}">⚠️</span>
-              {% endif %}
-            </div>
+            <span class="stock-num {% if p.quantity == 0 %}text-danger{% elif p.is_low_stock %}text-warning{% else %}text-success{% endif %}">
+              {{ p.quantity }}
+            </span>
+            {% if p.is_low_stock %}<span title="Stock mínimo: {{ p.min_stock }}">⚠️</span>{% endif %}
           </td>
           <td>${{ "{:,.0f}".format(p.purchase_price) }}</td>
           <td>${{ "{:,.0f}".format(p.sale_price) }}</td>
-          <td>
-            <span class="margin-badge">{{ p.profit_percent }}%</span>
-          </td>
+          <td><span class="margin-badge">{{ p.profit_percent }}%</span></td>
           <td>
             {% if p.quantity == 0 %}
               <span class="badge badge-red">Agotado</span>
@@ -93,18 +137,40 @@
             <div class="action-btns">
               <a href="{{ url_for('inventory.edit', product_id=p.id) }}" class="btn btn-sm btn-outline">Editar</a>
               <form method="POST" action="{{ url_for('inventory.delete', product_id=p.id) }}"
-                    onsubmit="return confirm('¿Eliminar « {{ p.name }} »?')">
-                <button class="btn btn-sm btn-danger" type="submit">Eliminar</button>
+                    onsubmit="return confirm('¿Eliminar {{ p.name }}?')">
+                <button class="btn btn-sm btn-danger">Eliminar</button>
               </form>
             </div>
           </td>
           {% endif %}
         </tr>
         {% else %}
-        <tr><td colspan="8" class="empty-state">No se encontraron productos.</td></tr>
+        <tr><td colspan="9" class="empty-state">No se encontraron productos.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let isCards = true;
+
+function toggleView() {
+  const cards = document.getElementById('cards-view');
+  const table = document.getElementById('table-view');
+  const btn   = document.getElementById('view-btn');
+  isCards = !isCards;
+  if (isCards) {
+    cards.style.display = 'grid';
+    table.style.display = 'none';
+    btn.textContent = '☰ Tabla';
+  } else {
+    cards.style.display = 'none';
+    table.style.display = 'block';
+    btn.textContent = '⊞ Tarjetas';
+  }
+}
+</script>
 {% endblock %}
