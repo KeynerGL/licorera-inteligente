@@ -127,3 +127,21 @@ def api_products():
         'sale_price' : p.sale_price,
         'image_url' : p.image_url or ''
     } for p in products])
+@inventory_bp.route('/quick-stock/<int:product_id>', methods=['POST'])
+@login_required
+def quick_stock(product_id):
+    """Subir stock rápido sin entrar a editar el producto."""
+    product = Product.query.get_or_404(product_id)
+    try:
+        amount = int(request.form.get('amount', 0))
+        if amount > 0:
+            product.quantity += amount
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'new_quantity': product.quantity,
+                'message': f'+{amount} unidades agregadas a {product.name}'
+            })
+        return jsonify({'error': 'Cantidad inválida'}), 400
+    except ValueError:
+        return jsonify({'error': 'Error en los datos'}), 400

@@ -76,14 +76,15 @@
         <span class="inv-margin">+{{ p.profit_percent }}%</span>
       </div>
       {% if current_user.is_admin() %}
-      <div class="inv-card-actions">
-        <a href="{{ url_for('inventory.edit', product_id=p.id) }}" class="btn btn-sm btn-outline">✏️ Editar</a>
-        <form method="POST" action="{{ url_for('inventory.delete', product_id=p.id) }}"
-              onsubmit="return confirm('¿Eliminar {{ p.name }}?')" style="display:inline">
-          <button class="btn btn-sm btn-danger" type="submit">🗑</button>
-        </form>
-      </div>
-      {% endif %}
+        <div class="inv-card-actions">
+          <a href="{{ url_for('inventory.edit', product_id=p.id) }}" class="btn btn-sm btn-outline">✏️ Editar</a>
+          <button class="btn btn-sm btn-success" onclick="quickStock({{ p.id }}, '{{ p.name }}')">+Stock</button>
+          <form method="POST" action="{{ url_for('inventory.delete', product_id=p.id) }}"
+                onsubmit="return confirm('¿Eliminar {{ p.name }}?')" style="display:inline">
+            <button class="btn btn-sm btn-danger" type="submit">🗑</button>
+          </form>
+        </div>
+        {% endif %}
     </div>
   </div>
   {% else %}
@@ -172,5 +173,25 @@ function toggleView() {
     btn.textContent = '⊞ Tarjetas';
   }
 }
+async function quickStock(productId, productName) {
+  const amount = prompt(`¿Cuántas unidades agregar a "${productName}"?`);
+  if (!amount || isNaN(amount) || parseInt(amount) <= 0) return;
+
+  const formData = new FormData();
+  formData.append('amount', amount);
+
+  const res  = await fetch(`/inventory/quick-stock/${productId}`, {
+    method: 'POST', body: formData
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    alert(`✅ ${data.message}\nStock actual: ${data.new_quantity}`);
+    location.reload();
+  } else {
+    alert('Error: ' + data.error);
+  }
+}
 </script>
+
 {% endblock %}
