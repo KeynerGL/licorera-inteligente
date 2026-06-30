@@ -61,7 +61,7 @@ def add():
                 purchase_price = float(request.form['purchase_price']),
                 sale_price     = float(request.form['sale_price']),
                 min_stock      = int(request.form.get('min_stock', 5)),
-                image_url      = request.form.get('image_url', '').strip()
+                image_url      = request.form.get('image_url', '').strip(),
                 code           = request.form.get('code', '').strip()
             )
             db.session.add(product)
