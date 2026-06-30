@@ -22,6 +22,7 @@ class Product(db.Model):
     min_stock      = db.Column(db.Integer, default=5)        # Stock mínimo para alerta
     created_at     = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at     = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    code           = db.Column(db.String(50), default='')
     image_url      = db.Column(db.String(500), default='')
     is_active      = db.Column(db.Boolean, default=True)
 
