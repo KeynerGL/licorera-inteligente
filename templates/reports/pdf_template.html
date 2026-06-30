@@ -8,8 +8,8 @@
 
   /* ENCABEZADO */
   .header {
-    background: #0A1628;
-    color: white;
+    background: #EFF6FF;
+    border-bottom: 3px solid #3B82F6;
     padding: 24px 30px;
     display: flex;
     justify-content: space-between;
@@ -18,13 +18,13 @@
   }
   .header-brand { display: flex; align-items: center; gap: 12px; }
   .header-logo  { font-size: 2rem; }
-  .header-name  { font-size: 1.3rem; font-weight: 700; }
-  .header-sub   { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
-  .header-info  { text-align: right; font-size: 0.8rem; color: #94a3b8; }
-  .header-info strong { color: #D4A843; font-size: 1rem; display: block; margin-bottom: 4px; }
+  .header-name  { font-size: 1.3rem; font-weight: 700; color: #1e40af; }
+  .header-sub   { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+  .header-info  { text-align: right; font-size: 0.8rem; color: #64748b; }
+  .header-info strong { color: #3B82F6; font-size: 1rem; display: block; margin-bottom: 4px; }
 
-  /* LÍNEA DORADA */
-  .gold-line { height: 3px; background: linear-gradient(90deg, #D4A843, #F5C842, #D4A843);
+  /* LÍNEA AZUL */
+  .blue-line { height: 3px; background: linear-gradient(90deg, #3B82F6, #93C5FD, #3B82F6);
                margin-bottom: 24px; }
 
   /* KPIs */
@@ -35,8 +35,8 @@
   }
   .kpi-box.green { background: #f0fdf4; border-color: #86efac; }
   .kpi-box.blue  { background: #eff6ff; border-color: #93c5fd; }
-  .kpi-box.gold  { background: #fffbeb; border-color: #fcd34d; }
-  .kpi-box.red   { background: #fef2f2; border-color: #fca5a5; }
+  .kpi-box.sky   { background: #f0f9ff; border-color: #7dd3fc; }
+  .kpi-box.slate { background: #f8fafc; border-color: #cbd5e1; }
   .kpi-val  { font-size: 1.4rem; font-weight: 700; color: #1e293b; }
   .kpi-lbl  { font-size: 0.7rem; color: #64748b; text-transform: uppercase;
                letter-spacing: 0.05em; margin-top: 4px; }
@@ -45,14 +45,14 @@
   .section { margin: 0 30px 24px; }
   .section-title {
     font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.06em; color: #0A1628; margin-bottom: 10px;
-    padding-bottom: 6px; border-bottom: 2px solid #D4A843;
+    letter-spacing: 0.06em; color: #1e40af; margin-bottom: 10px;
+    padding-bottom: 6px; border-bottom: 2px solid #3B82F6;
   }
 
   /* TABLAS */
   table { width: 100%; border-collapse: collapse; }
   th {
-    background: #0A1628; color: white; padding: 8px 12px;
+    background: #3B82F6; color: white; padding: 8px 12px;
     text-align: left; font-size: 0.75rem; text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -61,32 +61,33 @@
   tr:last-child td { border-bottom: none; }
   .text-right { text-align: right; }
   .text-green { color: #16a34a; font-weight: 700; }
-  .text-gold  { color: #D4A843; font-weight: 700; }
+  .text-blue  { color: #3B82F6; font-weight: 700; }
 
   /* TOTALES */
   .totals-box {
     margin: 0 30px 24px;
-    background: #0A1628; color: white;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
     border-radius: 10px; padding: 16px 20px;
   }
   .totals-row {
     display: flex; justify-content: space-between;
-    padding: 5px 0; font-size: 0.85rem; color: #94a3b8;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 5px 0; font-size: 0.85rem; color: #475569;
+    border-bottom: 1px solid #DBEAFE;
   }
   .totals-row:last-child { border-bottom: none; }
-  .totals-row.main { color: white; font-size: 1rem; font-weight: 700; padding-top: 10px; }
-  .totals-row.main span:last-child { color: #D4A843; }
-  .totals-row .profit { color: #6ee7b7; font-weight: 700; }
+  .totals-row.main { color: #1e293b; font-size: 1rem; font-weight: 700; padding-top: 10px; }
+  .totals-row.main span:last-child { color: #3B82F6; }
+  .totals-row .profit { color: #16a34a; font-weight: 700; }
 
   /* PIE DE PÁGINA */
   .footer {
     margin-top: 30px; padding: 16px 30px;
-    background: #f8fafc; border-top: 1px solid #e2e8f0;
+    background: #EFF6FF; border-top: 2px solid #BFDBFE;
     display: flex; justify-content: space-between;
-    font-size: 0.72rem; color: #94a3b8;
+    font-size: 0.72rem; color: #64748b;
   }
-  .footer strong { color: #0A1628; }
+  .footer strong { color: #1e40af; }
 </style>
 </head>
 <body>
@@ -107,7 +108,7 @@
   </div>
 </div>
 
-<div class="gold-line"></div>
+<div class="blue-line"></div>
 
 <!-- KPIs -->
 <div class="kpi-row">
@@ -119,11 +120,11 @@
     <div class="kpi-val">${{ "{:,.0f}".format(total_cost) }}</div>
     <div class="kpi-lbl">Costo Total</div>
   </div>
-  <div class="kpi-box gold">
+  <div class="kpi-box sky">
     <div class="kpi-val">${{ "{:,.0f}".format(total_profit) }}</div>
     <div class="kpi-lbl">Ganancia Neta</div>
   </div>
-  <div class="kpi-box red">
+  <div class="kpi-box slate">
     <div class="kpi-val">{{ num_sales }}</div>
     <div class="kpi-lbl">Transacciones</div>
   </div>
@@ -147,7 +148,9 @@
       </tr>
       <tr>
         <td><strong>IVA recaudado (19%)</strong></td>
-        <td class="text-right text-gold"><strong>${{ "{:,.0f}".format(total_sales - (total_sales / 1.19)) }}</strong></td>
+        <td class="text-right text-blue">
+          <strong>${{ "{:,.0f}".format(total_sales - (total_sales / 1.19)) }}</strong>
+        </td>
       </tr>
     </tbody>
   </table>
