@@ -480,3 +480,21 @@ code { background: var(--bg-tertiary); padding: 2px 7px; border-radius: 4px; fon
                   background: rgba(16,185,129,0.15); color: #6ee7b7; border-radius: 20px; }
 .inv-card-actions { display: flex; gap: 6px; margin-top: 10px; }
 .inv-card-actions .btn { flex: 1; justify-content: center; }
+/* ===== BANNER STOCK BAJO ===== */
+.low-stock-banner {
+  display: flex; align-items: center; gap: 16px;
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.4);
+  border-left: 4px solid var(--accent-orange);
+  border-radius: var(--radius-md);
+  padding: 16px 20px; margin-bottom: 16px;
+  animation: pulse-warning 2s infinite;
+}
+@keyframes pulse-warning {
+  0%, 100% { border-left-color: var(--accent-orange); }
+  50%       { border-left-color: var(--accent-yellow); }
+}
+.low-stock-banner-icon { font-size: 2rem; flex-shrink: 0; }
+.low-stock-banner-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.low-stock-banner-text strong { color: var(--accent-orange); font-size: 0.95rem; }
+.low-stock-banner-text span   { color: var(--text-muted); font-size: 0.8rem; }

@@ -19,6 +19,18 @@
   </div>
 </div>
 
+<!-- BANNER STOCK BAJO -->
+{% if low_count %}
+<div class="low-stock-banner">
+  <div class="low-stock-banner-icon">⚠️</div>
+  <div class="low-stock-banner-text">
+    <strong>{{ low_count }} producto(s) con stock bajo</strong>
+    <span>Revisa y repone el inventario lo antes posible.</span>
+  </div>
+  <a href="?low_stock=1" class="btn btn-warning btn-sm">Ver productos</a>
+</div>
+{% endif %}
+
 <!-- Filtros -->
 <div class="card filters-card">
   <form method="GET" class="filters-form">
