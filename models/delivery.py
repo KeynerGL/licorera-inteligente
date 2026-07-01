@@ -23,6 +23,7 @@ class Delivery(db.Model):
     user_id      = db.Column(db.Integer, db.ForeignKey('users.id'))  # Quien registró
     created_at   = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at   = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    estimated_time = db.Column(db.String(20), default='30 min')  # Tiempo estimado de entrega
 
     # Relación con usuario
     user = db.relationship('User', backref='deliveries')

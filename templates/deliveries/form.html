@@ -48,6 +48,16 @@
     </div>
     {% endif %}
     <div class="form-group">
+      <label class="form-label">Tiempo estimado de entrega</label>
+      <select class="form-input" name="estimated_time">
+        <option value="15 min" {{ 'selected' if delivery and delivery.estimated_time == '15 min' }}>⚡ 15 minutos</option>
+        <option value="30 min" {{ 'selected' if delivery and delivery.estimated_time == '30 min' else 'selected' if not delivery }}>🛵 30 minutos</option>
+        <option value="45 min" {{ 'selected' if delivery and delivery.estimated_time == '45 min' }}>🕐 45 minutos</option>
+        <option value="1 hora" {{ 'selected' if delivery and delivery.estimated_time == '1 hora' }}>⏰ 1 hora</option>
+        <option value="1.5 horas" {{ 'selected' if delivery and delivery.estimated_time == '1.5 horas' }}>⏰ 1 hora y media</option>
+      </select>
+    </div>
+    <div class="form-group">
       <label class="form-label">Notas del Pedido</label>
       <textarea class="form-input" name="notes" rows="3"
                 placeholder="Ej: Sin hielo, 6 Águilas frías, 1 Nectar...">{{ delivery.notes if delivery else '' }}</textarea>

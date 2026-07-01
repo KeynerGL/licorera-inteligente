@@ -42,6 +42,7 @@
     </div>
 
     <div class="delivery-info">
+      <div>⏱ Entrega estimada: <strong>{{ d.estimated_time }}</strong></div>
       <div>📍 {{ d.address }}</div>
       <div>📞 <a href="tel:{{ d.phone }}">{{ d.phone }}</a></div>
       {% if d.total %}<div>💵 ${{ "{:,.0f}".format(d.total) }}</div>{% endif %}

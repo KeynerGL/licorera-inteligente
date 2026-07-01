@@ -64,6 +64,7 @@ def add():
                 phone         = request.form['phone'].strip(),
                 notes         = request.form.get('notes', '').strip(),
                 total         = float(request.form.get('total', 0)),
+                estimated_time = request.form.get('estimated_time', '30 min'),
                 user_id       = current_user.id
             )
             db.session.add(delivery)
@@ -90,6 +91,7 @@ def edit(delivery_id):
             delivery.notes         = request.form.get('notes', '').strip()
             delivery.total         = float(request.form.get('total', 0))
             delivery.status        = request.form.get('status', delivery.status)
+            delivery.estimated_time = request.form.get('estimated_time', delivery.estimated_time)
             db.session.commit()
             flash('Domicilio actualizado correctamente.', 'success')
             return redirect(url_for('deliveries.index'))
