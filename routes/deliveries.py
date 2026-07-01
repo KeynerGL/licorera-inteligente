@@ -169,3 +169,51 @@ def delete(delivery_id):
     db.session.commit()
     flash('Domicilio eliminado.', 'info')
     return redirect(url_for('deliveries.index'))
+@deliveries_bp.route('/add-ajax', methods=['POST'])
+@login_required
+def add_ajax():
+    """Registrar nuevo domicilio con productos vía AJAX."""
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Datos inválidos'}), 400
+
+    try:
+        delivery = Delivery(
+            customer_name  = data['customer_name'],
+            address        = data['address'],
+            phone          = data['phone'],
+            notes          = data.get('notes', ''),
+            total          = float(data.get('total', 0)),
+            estimated_time = data.get('estimated_time', '30 min'),
+            status         = 'Pendiente',
+            user_id        = current_user.id
+        )
+        db.session.add(delivery)
+        db.session.commit()
+        return jsonify({'success': True, 'delivery_id': delivery.id})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@deliveries_bp.route('/edit-ajax/<int:delivery_id>', methods=['POST'])
+@login_required
+def edit_ajax(delivery_id):
+    """Editar domicilio con productos vía AJAX."""
+    delivery = Delivery.query.get_or_404(delivery_id)
+    data     = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'Datos inválidos'}), 400
+
+    try:
+        delivery.customer_name  = data['customer_name']
+        delivery.address        = data['address']
+        delivery.phone          = data['phone']
+        delivery.notes          = data.get('notes', '')
+        delivery.total          = float(data.get('total', 0))
+        delivery.estimated_time = data.get('estimated_time', delivery.estimated_time)
+        delivery.status         = data.get('status', delivery.status)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400

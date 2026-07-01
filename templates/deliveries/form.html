@@ -6,65 +6,295 @@
 <div class="page-header">
   <div>
     <h2 class="page-title">{{ '✏️ Editar Domicilio' if delivery else '🛵 Nuevo Domicilio' }}</h2>
+    <p class="page-sub">Completa los datos del cliente y agrega los productos.</p>
   </div>
   <a href="{{ url_for('deliveries.index') }}" class="btn btn-outline">← Volver</a>
 </div>
 
-<div class="card" style="max-width:520px">
-  <form method="POST">
-    <div class="form-group">
-      <label class="form-label">Nombre del Cliente *</label>
-      <input class="form-input" type="text" name="customer_name" required
-             value="{{ delivery.customer_name if delivery else '' }}"
-             placeholder="Ej: María González"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Dirección *</label>
-      <input class="form-input" type="text" name="address" required
-             value="{{ delivery.address if delivery else '' }}"
-             placeholder="Ej: Calle 45 #23-10, Barrio La Paz"/>
-    </div>
-    <div class="form-row">
+<div class="delivery-form-layout">
+  <!-- ===== DATOS DEL CLIENTE ===== -->
+  <div class="delivery-form-left">
+    <div class="card">
+      <h3 class="card-title">👤 Datos del Cliente</h3>
       <div class="form-group">
-        <label class="form-label">Teléfono *</label>
-        <input class="form-input" type="tel" name="phone" required
-               value="{{ delivery.phone if delivery else '' }}"
-               placeholder="Ej: 3001234567"/>
+        <label class="form-label">Nombre del Cliente *</label>
+        <input class="form-input" type="text" id="customer_name"
+               value="{{ delivery.customer_name if delivery else '' }}"
+               placeholder="Ej: María González"/>
       </div>
       <div class="form-group">
-        <label class="form-label">Total del Pedido (COP)</label>
-        <input class="form-input" type="number" name="total" min="0"
-               value="{{ delivery.total|int if delivery else 0 }}"/>
+        <label class="form-label">Dirección *</label>
+        <input class="form-input" type="text" id="address"
+               value="{{ delivery.address if delivery else '' }}"
+               placeholder="Ej: Calle 45 #23-10, Barrio La Paz"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Teléfono *</label>
+          <input class="form-input" type="tel" id="phone"
+                 value="{{ delivery.phone if delivery else '' }}"
+                 placeholder="Ej: 3001234567"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tiempo estimado</label>
+          <select class="form-input" id="estimated_time">
+            <option value="15 min">⚡ 15 minutos</option>
+            <option value="30 min" selected>🛵 30 minutos</option>
+            <option value="45 min">🕐 45 minutos</option>
+            <option value="1 hora">⏰ 1 hora</option>
+            <option value="1.5 horas">⏰ 1 hora y media</option>
+          </select>
+        </div>
+      </div>
+      {% if delivery %}
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <select class="form-input" id="delivery_status">
+          {% for s in statuses %}
+          <option value="{{ s }}" {{ 'selected' if delivery.status == s }}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <div class="form-group">
+        <label class="form-label">Notas adicionales</label>
+        <textarea class="form-input" id="notes" rows="2"
+                  placeholder="Ej: Sin hielo, timbre no funciona...">{{ delivery.notes if delivery else '' }}</textarea>
       </div>
     </div>
-    {% if delivery %}
-    <div class="form-group">
-      <label class="form-label">Estado</label>
-      <select class="form-input" name="status">
-        {% for s in statuses %}
-        <option value="{{ s }}" {{ 'selected' if delivery.status == s }}>{{ s }}</option>
-        {% endfor %}
-      </select>
+
+    <!-- ===== BUSCADOR DE PRODUCTOS ===== -->
+    <div class="card">
+      <h3 class="card-title">🔍 Agregar Productos</h3>
+      <div class="pos-search-bar">
+        <input type="text" id="product-search" class="form-input"
+               placeholder="🔍 Buscar producto..." oninput="filterProducts()"/>
+        <select id="category-filter" class="form-input" onchange="filterProducts()">
+          <option value="">Todas las categorías</option>
+        </select>
+      </div>
+      <div class="product-grid" id="product-grid">
+        <div class="loading-products">Cargando productos...</div>
+      </div>
     </div>
-    {% endif %}
-    <div class="form-group">
-      <label class="form-label">Tiempo estimado de entrega</label>
-      <select class="form-input" name="estimated_time">
-        <option value="15 min" {{ 'selected' if delivery and delivery.estimated_time == '15 min' }}>⚡ 15 minutos</option>
-        <option value="30 min" {{ 'selected' if delivery and delivery.estimated_time == '30 min' else 'selected' if not delivery }}>🛵 30 minutos</option>
-        <option value="45 min" {{ 'selected' if delivery and delivery.estimated_time == '45 min' }}>🕐 45 minutos</option>
-        <option value="1 hora" {{ 'selected' if delivery and delivery.estimated_time == '1 hora' }}>⏰ 1 hora</option>
-        <option value="1.5 horas" {{ 'selected' if delivery and delivery.estimated_time == '1.5 horas' }}>⏰ 1 hora y media</option>
-      </select>
+  </div>
+
+  <!-- ===== CARRITO DEL DOMICILIO ===== -->
+  <div class="delivery-form-right">
+    <div class="card cart-card" style="position:sticky; top:60px">
+      <h3 class="card-title">🛵 Productos del Domicilio</h3>
+
+      <div class="cart-items" id="cart-items">
+        <p class="cart-empty">Agrega productos al domicilio.</p>
+      </div>
+
+      <div class="cart-totals">
+        <div class="total-row total-main">
+          <span>TOTAL:</span>
+          <span id="cart-total">$0</span>
+        </div>
+        <div class="total-row text-success">
+          <span>Ganancia estimada:</span>
+          <span id="cart-profit">$0</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" id="confirm-btn"
+              onclick="confirmDelivery()" style="margin-top:1rem">
+        🛵 {{ 'Guardar Cambios' if delivery else 'Registrar Domicilio' }}
+      </button>
     </div>
-    <div class="form-group">
-      <label class="form-label">Notas del Pedido</label>
-      <textarea class="form-input" name="notes" rows="3"
-                placeholder="Ej: Sin hielo, 6 Águilas frías, 1 Nectar...">{{ delivery.notes if delivery else '' }}</textarea>
-    </div>
-    <button class="btn btn-primary btn-block" type="submit">
-      {{ '💾 Guardar' if delivery else '🛵 Registrar Domicilio' }}
-    </button>
-  </form>
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let cart     = [];
+let products = [];
+const isEdit = {{ 'true' if delivery else 'false' }};
+const deliveryId = {{ delivery.id if delivery else 'null' }};
+
+// ===== Cargar productos =====
+async function loadProducts() {
+  const res = await fetch('/inventory/api/products');
+  products  = await res.json();
+
+  const cats = [...new Set(products.map(p => p.category))];
+  const sel  = document.getElementById('category-filter');
+  cats.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
+
+  {% if delivery %}
+  // Si es edición cargar productos existentes desde las notas
+  parseExistingItems();
+  {% endif %}
+
+  renderProducts(products);
+}
+
+function filterProducts() {
+  const q   = document.getElementById('product-search').value.toLowerCase();
+  const cat = document.getElementById('category-filter').value;
+  const filtered = products.filter(p =>
+    p.name.toLowerCase().includes(q) && (!cat || p.category === cat)
+  );
+  renderProducts(filtered);
+}
+
+function renderProducts(list) {
+  const grid = document.getElementById('product-grid');
+  if (!list.length) {
+    grid.innerHTML = '<p class="empty-state">No se encontraron productos.</p>';
+    return;
+  }
+  grid.innerHTML = list.map(p => `
+    <div class="product-card ${p.quantity <= 3 ? 'low-stock' : ''}" onclick="addToCart(${p.id})">
+      <div style="width:100%; height:80px; display:flex; align-items:center; justify-content:center;
+                  background:#f8fafc; border-radius:6px; margin-bottom:8px; overflow:hidden;">
+        ${p.image_url
+          ? `<img src="${p.image_url}" style="max-width:100%; max-height:80px; object-fit:contain;"/>`
+          : `<span style="font-size:2rem">🍾</span>`
+        }
+      </div>
+      <div class="product-category">${p.category}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="product-price">$${p.sale_price.toLocaleString()}</div>
+      <div class="product-stock ${p.quantity === 0 ? 'out' : p.quantity <= 3 ? 'low' : ''}">
+        Stock: ${p.quantity}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== Carrito =====
+function addToCart(productId) {
+  const p = products.find(p => p.id === productId);
+  if (!p || p.quantity === 0) return;
+
+  const existing = cart.find(i => i.product.id === productId);
+  if (existing) {
+    if (existing.quantity < p.quantity) existing.quantity++;
+    else { alert(`Solo hay ${p.quantity} unidades disponibles.`); return; }
+  } else {
+    cart.push({ product: p, quantity: 1 });
+  }
+  renderCart();
+}
+
+function removeFromCart(productId) {
+  cart = cart.filter(i => i.product.id !== productId);
+  renderCart();
+}
+
+function changeQty(productId, delta) {
+  const item = cart.find(i => i.product.id === productId);
+  if (!item) return;
+  item.quantity += delta;
+  if (item.quantity <= 0) removeFromCart(productId);
+  else if (item.quantity > item.product.quantity) {
+    item.quantity = item.product.quantity;
+    renderCart();
+  } else renderCart();
+}
+
+function renderCart() {
+  const container = document.getElementById('cart-items');
+
+  if (!cart.length) {
+    container.innerHTML = '<p class="cart-empty">Agrega productos al domicilio.</p>';
+    updateTotals(0, 0);
+    return;
+  }
+
+  container.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.product.name}</div>
+        <div class="cart-item-price">$${item.product.sale_price.toLocaleString()} c/u</div>
+      </div>
+      <div class="cart-item-controls">
+        <button onclick="changeQty(${item.product.id}, -1)" class="qty-btn">−</button>
+        <span class="qty-num">${item.quantity}</span>
+        <button onclick="changeQty(${item.product.id}, +1)" class="qty-btn">+</button>
+        <button onclick="removeFromCart(${item.product.id})" class="remove-btn">✕</button>
+      </div>
+      <div class="cart-item-subtotal">$${(item.product.sale_price * item.quantity).toLocaleString()}</div>
+    </div>
+  `).join('');
+
+  const total  = cart.reduce((s, i) => s + i.product.sale_price * i.quantity, 0);
+  const profit = cart.reduce((s, i) => s + (i.product.sale_price - i.product.sale_price * 0.65) * i.quantity, 0);
+  updateTotals(total, profit);
+}
+
+function updateTotals(total, profit) {
+  document.getElementById('cart-total').textContent  = '$' + total.toLocaleString();
+  document.getElementById('cart-profit').textContent = '$' + Math.round(profit).toLocaleString();
+}
+
+// ===== Confirmar domicilio =====
+async function confirmDelivery() {
+  const customer_name  = document.getElementById('customer_name').value.trim();
+  const address        = document.getElementById('address').value.trim();
+  const phone          = document.getElementById('phone').value.trim();
+  const estimated_time = document.getElementById('estimated_time').value;
+  const notes          = document.getElementById('notes').value.trim();
+
+  if (!customer_name || !address || !phone) {
+    alert('Por favor completa nombre, dirección y teléfono.');
+    return;
+  }
+
+  const total = cart.reduce((s, i) => s + i.product.sale_price * i.quantity, 0);
+
+  // Armar notas con los productos
+  const itemsText = cart.length
+    ? 'PEDIDO ONLINE:\n' + cart.map(i =>
+        `- ${i.product.name} x${i.quantity} = $${(i.product.sale_price * i.quantity).toLocaleString()}`
+      ).join('\n') + `\nTotal: $${total.toLocaleString()}`
+    : notes;
+
+  const payload = {
+    customer_name,
+    address,
+    phone,
+    estimated_time,
+    notes: itemsText,
+    total,
+    status: document.getElementById('delivery_status')?.value || 'Pendiente',
+    items: cart.map(i => ({ product_id: i.product.id, quantity: i.quantity }))
+  };
+
+  const url    = isEdit ? `/deliveries/edit-ajax/${deliveryId}` : '/deliveries/add-ajax';
+  const res    = await fetch(url, {
+    method : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body   : JSON.stringify(payload)
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    window.location.href = '/deliveries/';
+  } else {
+    alert('Error: ' + data.error);
+  }
+}
+
+loadProducts();
+</script>
+
+<style>
+.delivery-form-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 16px;
+  align-items: start;
+}
+.delivery-form-left  { display: flex; flex-direction: column; gap: 16px; }
+.delivery-form-right { }
+
+@media (max-width: 1024px) {
+  .delivery-form-layout { grid-template-columns: 1fr; }
+}
+</style>
 {% endblock %}
